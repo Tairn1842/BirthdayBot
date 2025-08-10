@@ -13,6 +13,10 @@ venv/
 env/
 .env/
 
+# Database files
+*.sqlite3
+*.db
+
 # Tools & caches
 .mypy_cache/
 .pytest_cache/
