@@ -27,28 +27,6 @@ goblins = 526069180831891467
 poltergeists = 1345448742022545510
 
 
-
-class MemberOrID(app_commands.Transformer):
-    async def transform(self, interaction: discord.Interaction, value: str) -> discord.Member:
-        if not interaction.guild:
-            raise app_commands.AppCommandError("This command must be used in a server.")
-
-        m = re.fullmatch(r"<@!?(\d+)>", value)
-        user_id = int(m.group(1)) if m else (int(value) if value.isdigit() else None)
-        if user_id is None:
-            raise app_commands.AppCommandError("Provide a member mention or numeric ID.")
-
-        member = interaction.guild.get_member(user_id)
-        if member:
-            return member
-
-        try:
-            return await interaction.guild.fetch_member(user_id)
-        except discord.NotFound:
-            raise app_commands.AppCommandError("Member not found in this server.")
-
-
-
 class birthday_handling(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -94,6 +72,7 @@ class birthday_handling(commands.Cog):
                 pass
             await asyncio.sleep(900)
 
+
     @app_commands.command(name="add_birthday", description="Add a birthday to the database")
     @app_commands.describe(
         user="Select a user or provide their ID",
@@ -105,7 +84,7 @@ class birthday_handling(commands.Cog):
     async def birthday(
         self,
         interaction: discord.Interaction,
-        user: app_commands.Transform[discord.Member, MemberOrID],
+        user: discord.Member,
         month: int,
         day: int,
         timezone: str = "UTC",
@@ -141,38 +120,11 @@ class birthday_handling(commands.Cog):
             ephemeral=True,
         )
 
-    @birthday.autocomplete("user")
-    async def birthday_user_autocomplete(self, interaction: discord.Interaction, current: str):
-        if not interaction.guild:
-            return []
-        choices: list[app_commands.Choice[str]] = []
-
-        if current.isdigit():
-            m = interaction.guild.get_member(int(current))
-            if not m:
-                try:
-                    m = await interaction.guild.fetch_member(int(current))
-                except Exception:
-                    m = None
-            if m:
-                label = f"{m.display_name} (@{m.name})"
-                return [app_commands.Choice(name=label, value=str(m.id))]
-
-        try:
-            members = await interaction.guild.query_members(query=current, limit=25)
-        except Exception:
-            lc = current.lower()
-            members = [m for m in interaction.guild.members if lc in m.display_name.lower()][:25]
-
-        for m in members:
-            label = f"{m.display_name} (@{m.name})"
-            choices.append(app_commands.Choice(name=label, value=str(m.id)))
-        return choices
-
     @birthday.autocomplete("timezone")
     async def birthday_timezone_ac(self, interaction: discord.Interaction, current: str):
         pairs = await build_timezone_choices(current)
         return [app_commands.Choice(name=name, value=value) for name, value in pairs]
+
 
     @app_commands.command(name="edit_birthday", description="Edit an existing birthday entry")
     @app_commands.describe(
@@ -185,7 +137,7 @@ class birthday_handling(commands.Cog):
     async def edit_birthday(
         self,
         interaction: discord.Interaction,
-        user: app_commands.Transform[discord.Member, MemberOrID],
+        user: discord.Member,
         month: int,
         day: int,
         timezone: str = "UTC",
@@ -225,38 +177,11 @@ class birthday_handling(commands.Cog):
             ephemeral=True,
         )
 
-    @edit_birthday.autocomplete("user")
-    async def edit_user_autocomplete(self, interaction: discord.Interaction, current: str):
-        if not interaction.guild:
-            return []
-        choices: list[app_commands.Choice[str]] = []
-
-        if current.isdigit():
-            m = interaction.guild.get_member(int(current))
-            if not m:
-                try:
-                    m = await interaction.guild.fetch_member(int(current))
-                except Exception:
-                    m = None
-            if m:
-                label = f"{m.display_name} (@{m.name})"
-                return [app_commands.Choice(name=label, value=str(m.id))]
-
-        try:
-            members = await interaction.guild.query_members(query=current, limit=25)
-        except Exception:
-            lc = current.lower()
-            members = [m for m in interaction.guild.members if lc in m.display_name.lower()][:25]
-
-        for m in members:
-            label = f"{m.display_name} (@{m.name})"
-            choices.append(app_commands.Choice(name=label, value=str(m.id)))
-        return choices
-
     @edit_birthday.autocomplete("timezone")
     async def edit_timezone_ac(self, interaction: discord.Interaction, current: str):
         pairs = await build_timezone_choices(current)
         return [app_commands.Choice(name=name, value=value) for name, value in pairs]
+
 
     @app_commands.command(name="remove_birthday", description="Remove a birthday entry")
     @app_commands.describe(user="Select a user or provide their ID")
@@ -264,7 +189,7 @@ class birthday_handling(commands.Cog):
     async def remove_birthday(
         self,
         interaction: discord.Interaction,
-        user: app_commands.Transform[discord.Member, MemberOrID],
+        user: discord.Member,
     ):
         db = await init_db()
 
@@ -285,33 +210,25 @@ class birthday_handling(commands.Cog):
             ephemeral=True,
         )
 
-    @remove_birthday.autocomplete("user")
-    async def remove_user_autocomplete(self, interaction: discord.Interaction, current: str):
-        if not interaction.guild:
-            return []
-        choices: list[app_commands.Choice[str]] = []
 
-        if current.isdigit():
-            m = interaction.guild.get_member(int(current))
-            if not m:
-                try:
-                    m = await interaction.guild.fetch_member(int(current))
-                except Exception:
-                    m = None
-            if m:
-                label = f"{m.display_name} (@{m.name})"
-                return [app_commands.Choice(name=label, value=str(m.id))]
+    @app_commands.command(name="show_birthday", description="Show a user's birthday information")
+    @app_commands.describe(user="Select a user or provide their ID")
+    async def show_birthday(
+        self,
+        interaction: discord.Interaction, 
+        user= discord.Member
+    ):
+        db = await init_db()
+        async with db.execute("SELECT month, day FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
+            row  = await cur.fetchone()
+            if not row:
+                await interaction.response.send_message(
+                    f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.", 
+                    ephemeral=True)
+            for month, day in row:
+                await interaction.response.send_message(
+                    f"{user.mention}'s birthday is on {day}/{month}.", ephemeral=True)
 
-        try:
-            members = await interaction.guild.query_members(query=current, limit=25)
-        except Exception:
-            lc = current.lower()
-            members = [m for m in interaction.guild.members if lc in m.display_name.lower()][:25]
-
-        for m in members:
-            label = f"{m.display_name} (@{m.name})"
-            choices.append(app_commands.Choice(name=label, value=str(m.id)))
-        return choices
 
     @app_commands.command(name="force_wish", description="Force a wish checking cycle to run")
     @app_commands.checks.has_any_role(professors, goblins)
