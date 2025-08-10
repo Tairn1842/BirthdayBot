@@ -316,38 +316,14 @@ class birthday_handling(commands.Cog):
     @app_commands.command(name="force_wish", description="Force a birthday wish for a user")
     @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.has_any_role(professors, goblins)
-    async def force_wish(
-        self,
-        interaction: discord.Interaction,
-        user: app_commands.Transform[discord.Member, MemberOrID],
-    ):
-        db = await init_db()
-
-        async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
-            row = await cur.fetchone()
-        if not row:
-            await interaction.response.send_message(
-                f"{user.mention} does not have a birthday entry.",
-                ephemeral=True,
-            )
-            return
-
-        guild = interaction.guild or (self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id))
-        channel = guild.get_channel(clock_tower) or await guild.fetch_channel(clock_tower)
-
-        embed = discord.Embed(colour=discord.Color.blurple())
-        await channel.send(
-            user.mention,
-            embed=embed,
-            allowed_mentions=discord.AllowedMentions(users=True, roles=False, everyone=False),
-        )
-
-        await mark_sent([user.id])
-
-        await interaction.response.send_message(
-            f"Forced birthday wish for {user.mention}.",
-            ephemeral=True,
-        )
+    async def force_wish(self, interaction: discord.Interaction):
+        while True:
+            try:
+                to_wish = await birthay_parser(self.bot)
+                if to_wish:
+                    await self.wish_sender(to_wish)
+            except Exception:
+                pass
 
 
 async def setup(bot: BirthdayBot):
