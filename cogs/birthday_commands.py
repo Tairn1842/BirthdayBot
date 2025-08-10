@@ -313,8 +313,7 @@ class birthday_handling(commands.Cog):
             choices.append(app_commands.Choice(name=label, value=str(m.id)))
         return choices
 
-    @app_commands.command(name="force_wish", description="Force a birthday wish for a user")
-    @app_commands.describe(user="Select a user or provide their ID")
+    @app_commands.command(name="force_wish", description="Force a wish checking cycle to run")
     @app_commands.checks.has_any_role(professors, goblins)
     async def force_wish(self, interaction: discord.Interaction):
         while True:
