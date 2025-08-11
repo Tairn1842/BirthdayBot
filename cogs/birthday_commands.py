@@ -97,6 +97,7 @@ class birthday_handling(commands.Cog):
         day: int,
         timezone: str = "UTC",
     ):
+        await interaction.response.defer(ephemeral=True)
         try:
             ZoneInfo(timezone)
         except Exception:
@@ -105,9 +106,7 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
             return
-
         db = await init_db()
-
         async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if row:
@@ -116,14 +115,12 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
             return
-
         await db.execute(
             "INSERT INTO birthdays (user_id, month, day, timezone) VALUES (?,?,?,?)",
             (user.id, month, day, timezone),
         )
         await db.commit()
-
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"Added birthday for {user.mention} on {month}/{day} in timezone {timezone}.",
             ephemeral=True,
         )
@@ -146,6 +143,7 @@ class birthday_handling(commands.Cog):
         day: int,
         timezone: str = "UTC",
     ):
+        await interaction.response.defer(ephemeral=True)
         try:
             ZoneInfo(timezone)
         except Exception:
@@ -154,9 +152,7 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
             return
-
         db = await init_db()
-
         async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if not row:
@@ -165,7 +161,6 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
             return
-
         await db.execute(
             """
             UPDATE birthdays
@@ -175,8 +170,7 @@ class birthday_handling(commands.Cog):
             (month, day, timezone, user.id),
         )
         await db.commit()
-
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"Updated birthday for {user.mention} to {month}/{day} in timezone {timezone}.",
             ephemeral=True,
         )
@@ -190,8 +184,8 @@ class birthday_handling(commands.Cog):
         interaction: discord.Interaction,
         user: discord.Member,
     ):
+        await interaction.response.defer(ephemeral=True)
         db = await init_db()
-
         async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if not row:
@@ -200,11 +194,9 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
             return
-
         await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
         await db.commit()
-
-        await interaction.response.send_message(
+        await interaction.followup.send(
             f"Removed birthday entry for {user.mention}.",
             ephemeral=True,
         )
@@ -217,28 +209,31 @@ class birthday_handling(commands.Cog):
         interaction: discord.Interaction, 
         user= discord.Member
     ):
+        await interaction.response.defer(ephemeral=True)
         db = await init_db()
         async with db.execute("SELECT month, day FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row  = await cur.fetchone()
             if not row:
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.", 
                     ephemeral=True)
             for month, day in row:
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"{user.mention}'s birthday is on {day}/{month}.", ephemeral=True)
 
 
     @app_commands.command(name="force_wish", description="Force a wish checking cycle to run")
     @app_commands.checks.has_any_role(professors, goblins)
     async def force_wish(self, interaction: discord.Interaction):
-        while True:
-            try:
-                to_wish = await birthay_parser(self.bot)
-                if to_wish:
-                    await self.wish_sender(to_wish)
-            except Exception:
-                pass
+        await interaction.response.defer(ephemeral=True)
+        try:
+            to_wish = await birthay_parser(self.bot)
+            if to_wish:
+                await self.wish_sender(to_wish)
+        except Exception:
+            pass
+        await interaction.followup.send("Force wish cycle completed.", ephemeral=True)
+            
 
 
 async def setup(bot: BirthdayBot):
