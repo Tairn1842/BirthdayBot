@@ -3,13 +3,12 @@ from discord import app_commands
 from discord.ext import commands
 import re
 import asyncio
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, available_timezones
 from main import BirthdayBot
 from birthday_handling import (
     init_db,
     birthay_parser,
     mark_sent,
-    build_timezone_choices,
     guild_id,
 )
 
@@ -71,6 +70,14 @@ class birthday_handling(commands.Cog):
             except Exception:
                 pass
             await asyncio.sleep(900)
+    
+    
+    async def timezone_autocomplete(self, interaction: discord.Interaction, current: str):
+        return [
+            app_commands.Choice(name="tz", value = "tz")
+            for tz in available_timezones()
+            if current.lower() in tz.lower()
+        ][:25]
 
 
     @app_commands.command(name="add_birthday", description="Add a birthday to the database")
@@ -80,6 +87,7 @@ class birthday_handling(commands.Cog):
         day="Their birthday day (1-31)",
         timezone="Their IANA timezone (e.g. 'America/New_York')",
     )
+    @app_commands.autocomplete(timezone = timezone_autocomplete)
     @app_commands.checks.has_any_role(professors, goblins, poltergeists)
     async def birthday(
         self,
@@ -120,11 +128,6 @@ class birthday_handling(commands.Cog):
             ephemeral=True,
         )
 
-    @birthday.autocomplete("timezone")
-    async def birthday_timezone_ac(self, interaction: discord.Interaction, current: str):
-        pairs = await build_timezone_choices(current)
-        return [app_commands.Choice(name=name, value=value) for name, value in pairs]
-
 
     @app_commands.command(name="edit_birthday", description="Edit an existing birthday entry")
     @app_commands.describe(
@@ -133,6 +136,7 @@ class birthday_handling(commands.Cog):
         day="Their birthday day (1-31)",
         timezone="Their IANA timezone (e.g. 'America/New_York')",
     )
+    @app_commands.autocomplete(timezone_autocomplete)
     @app_commands.checks.has_any_role(professors, goblins, poltergeists)
     async def edit_birthday(
         self,
@@ -176,11 +180,6 @@ class birthday_handling(commands.Cog):
             f"Updated birthday for {user.mention} to {month}/{day} in timezone {timezone}.",
             ephemeral=True,
         )
-
-    @edit_birthday.autocomplete("timezone")
-    async def edit_timezone_ac(self, interaction: discord.Interaction, current: str):
-        pairs = await build_timezone_choices(current)
-        return [app_commands.Choice(name=name, value=value) for name, value in pairs]
 
 
     @app_commands.command(name="remove_birthday", description="Remove a birthday entry")
