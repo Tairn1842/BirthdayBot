@@ -1,11 +1,12 @@
 import aiosqlite
 from typing import List, Tuple
+from discord.ext import commands
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, available_timezones
 import importlib
 import discord
 
-guild_id = 524552788932558848
+guild_id = 1262748050535878816
 
 
 db_path = "bot.db"
@@ -134,3 +135,6 @@ async def mark_sent(user_ids: list[int]) -> None:
         )
 
     await db.commit()
+    
+async def setup(bot: commands.Bot):
+    await init_db()

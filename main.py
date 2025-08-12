@@ -20,7 +20,7 @@ class BirthdayBot(commands.Bot):
 
 bot = BirthdayBot()
 async def on_ready():
-    print(f"Logged in as {bot.user}")
+    print(f"Logged in as {bot.user}!")
 
 
 if __name__ == "__main__":

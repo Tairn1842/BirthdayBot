@@ -16,6 +16,7 @@ env/
 # Database files
 *.sqlite3
 *.db
+*.db*
 
 # Tools & caches
 .mypy_cache/

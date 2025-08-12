@@ -4,14 +4,16 @@ from discord.ext import commands
 import re
 import asyncio
 from zoneinfo import ZoneInfo, available_timezones
-from main import BirthdayBot
-from birthday_handling import *
+from .birthday_handling import *
 
 
 gryffindor_role = 524558749512499230
 hufflepuff_role = 524558390316498944
 ravenclaw_role = 524558868383137812
 slytherin_role = 524558928898424833
+
+test_role = 1382637708236685375
+test_channel = 1402297966953369610
 
 clock_tower = 825789506019000320
 
@@ -44,13 +46,13 @@ class birthday_handling(commands.Cog):
                 role = guild.get_role(slytherin_role)
                 wish_colour = (role and role.color) or discord.Colour.from_str("#006351")
             else:
-                continue
+                wish_colour = discord.Colour.blurple()
 
             birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.mention}!", 
                 description="Here is your personalised wish!", 
                 colour=wish_colour)
             birthday_embed.set_thumbnail(url=avatar_url)
-            channel = guild.get_channel(clock_tower) or await guild.fetch_channel(clock_tower)
+            channel = guild.get_channel(test_channel) or await guild.fetch_channel(test_channel)
             await channel.send(
                 birthday_member.mention,
                 embed=birthday_embed,
@@ -72,7 +74,7 @@ class birthday_handling(commands.Cog):
     
     async def timezone_autocomplete(self, interaction: discord.Interaction, current: str):
         return [
-            app_commands.Choice(name="tz", value = "tz")
+            app_commands.Choice(name=tz, value = tz)
             for tz in available_timezones()
             if current.lower() in tz.lower()
         ][:25]
@@ -86,7 +88,7 @@ class birthday_handling(commands.Cog):
         timezone="Their IANA timezone (e.g. 'America/New_York')",
     )
     @app_commands.autocomplete(timezone = timezone_autocomplete)
-    @app_commands.checks.has_any_role(professors, goblins, poltergeists)
+    @app_commands.checks.has_any_role(professors, goblins, poltergeists, test_role)
     async def birthday(
         self,
         interaction: discord.Interaction,
@@ -99,7 +101,7 @@ class birthday_handling(commands.Cog):
         try:
             ZoneInfo(timezone)
         except Exception:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "Invalid timezone. Please select one from the autocomplete list.",
                 ephemeral=True,
             )
@@ -108,7 +110,7 @@ class birthday_handling(commands.Cog):
         async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if row:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"{user.mention} already has a birthday entry.",
                 ephemeral=True,
             )
@@ -131,8 +133,8 @@ class birthday_handling(commands.Cog):
         day="Their birthday day (1-31)",
         timezone="Their IANA timezone (e.g. 'America/New_York')",
     )
-    @app_commands.autocomplete(timezone_autocomplete)
-    @app_commands.checks.has_any_role(professors, goblins, poltergeists)
+    @app_commands.autocomplete(timezone=timezone_autocomplete)
+    @app_commands.checks.has_any_role(professors, goblins, poltergeists, test_role)
     async def edit_birthday(
         self,
         interaction: discord.Interaction,
@@ -145,7 +147,7 @@ class birthday_handling(commands.Cog):
         try:
             ZoneInfo(timezone)
         except Exception:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "Invalid timezone. Please select one from the autocomplete list.",
                 ephemeral=True,
             )
@@ -154,7 +156,7 @@ class birthday_handling(commands.Cog):
         async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if not row:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"{user.mention} does not have a birthday entry.",
                 ephemeral=True,
             )
@@ -176,7 +178,7 @@ class birthday_handling(commands.Cog):
 
     @app_commands.command(name="remove_birthday", description="Remove a birthday entry")
     @app_commands.describe(user="Select a user or provide their ID")
-    @app_commands.checks.has_any_role(professors, goblins, poltergeists)
+    @app_commands.checks.has_any_role(professors, goblins, poltergeists, test_role)
     async def remove_birthday(
         self,
         interaction: discord.Interaction,
@@ -187,7 +189,7 @@ class birthday_handling(commands.Cog):
         async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if not row:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"{user.mention} does not have a birthday entry.",
                 ephemeral=True,
             )
@@ -205,23 +207,24 @@ class birthday_handling(commands.Cog):
     async def show_birthday(
         self,
         interaction: discord.Interaction, 
-        user= discord.Member
+        user: discord.Member
     ):
         await interaction.response.defer(ephemeral=True)
         db = await init_db()
         async with db.execute("SELECT month, day FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row  = await cur.fetchone()
-            if not row:
+            if row is None:
                 await interaction.followup.send(
                     f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.", 
                     ephemeral=True)
-            for month, day in row:
-                await interaction.followup.send(
-                    f"{user.mention}'s birthday is on {day}/{month}.", ephemeral=True)
+                return
+            month, day = row
+            await interaction.followup.send(
+                f"{user.mention}'s birthday is on {day}/{month}.", ephemeral=True)
 
 
     @app_commands.command(name="force_wish", description="Force a wish checking cycle to run")
-    @app_commands.checks.has_any_role(professors, goblins)
+    @app_commands.checks.has_any_role(professors, goblins, test_role)
     async def force_wish(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         try:
@@ -234,7 +237,7 @@ class birthday_handling(commands.Cog):
             
 
 
-async def setup(bot: BirthdayBot):
+async def setup(bot: commands.Bot):
     await init_db()
     cog = birthday_handling(bot)
     await bot.add_cog(cog)
