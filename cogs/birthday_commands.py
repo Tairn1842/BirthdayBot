@@ -5,13 +5,7 @@ import re
 import asyncio
 from zoneinfo import ZoneInfo, available_timezones
 from main import BirthdayBot
-from birthday_handling import (
-    init_db,
-    birthay_parser,
-    mark_sent,
-    guild_id,
-)
-
+from birthday_handling import *
 
 
 gryffindor_role = 524558749512499230
@@ -51,12 +45,14 @@ class birthday_handling(commands.Cog):
             else:
                 continue
 
-            birthday_embed = discord.Embed(colour=wish_colour)
+            birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.mention}!", 
+                description="Here is your personalised wish!", 
+                colour=wish_colour)
             channel = guild.get_channel(clock_tower) or await guild.fetch_channel(clock_tower)
             await channel.send(
                 birthday_member.mention,
                 embed=birthday_embed,
-                allowed_mentions=discord.AllowedMentions(users=True, roles=False, everyone=False),
+                allowed_mentions=discord.AllowedMentions(users=True, roles=True, everyone=False),
             )
 
         await mark_sent(to_wish)
