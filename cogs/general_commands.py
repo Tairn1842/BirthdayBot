@@ -64,11 +64,19 @@ class general_commands(commands.Cog):
             color=discord.Color.blurple()
         )
         for cmd in self.bot.tree.get_commands():
-            command_list.add_field(
-               name=cmd.name, 
-               value=cmd.description or "No description available", 
-               inline=False
-            )
+            if isinstance(cmd, app_commands.Group):
+                for sub in cmd.commands:
+                    command_list.add_field(
+                        name=f"{cmd.name} {sub.name}",
+                        value=sub.description or "No description available",
+                        inline=False,
+                    )
+            else:
+                command_list.add_field(
+                name=cmd.name, 
+                value=cmd.description or "No description available", 
+                inline=False
+                )
         command_list.set_footer(text="Page 2 of 2")
         
         birthday_setting_info = discord.Embed(

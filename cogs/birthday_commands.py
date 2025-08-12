@@ -35,16 +35,16 @@ class birthday_handling(commands.Cog):
 
             if any(r.id == gryffindor_role for r in birthday_member.roles):
                 role = guild.get_role(gryffindor_role)
-                wish_colour = (role and role.color) or discord.Colour.from_str("#c80752")
+                wish_colour = (role and role.color) or discord.Colour.from_str("#740001")
             elif any(r.id == hufflepuff_role for r in birthday_member.roles):
                 role = guild.get_role(hufflepuff_role)
-                wish_colour = (role and role.color) or discord.Colour.from_str("#ffd046")
+                wish_colour = (role and role.color) or discord.Colour.from_str("#FFD800")
             elif any(r.id == ravenclaw_role for r in birthday_member.roles):
                 role = guild.get_role(ravenclaw_role)
-                wish_colour = (role and role.color) or discord.Colour.from_str("#4d90cd")
+                wish_colour = (role and role.color) or discord.Colour.from_str("#0E1A40")
             elif any(r.id == slytherin_role for r in birthday_member.roles):
                 role = guild.get_role(slytherin_role)
-                wish_colour = (role and role.color) or discord.Colour.from_str("#006351")
+                wish_colour = (role and role.color) or discord.Colour.from_str("#1A472A")
             else:
                 wish_colour = discord.Colour.blurple()
 
@@ -79,8 +79,9 @@ class birthday_handling(commands.Cog):
             if current.lower() in tz.lower()
         ][:25]
 
+    birthday_group = app_commands.Group(name="birthday", description = "birthday commands")
 
-    @app_commands.command(name="add_birthday", description="Add a birthday to the database")
+    @birthday_group.command(name="add", description="Add a birthday to the database")
     @app_commands.describe(
         user="Select a user or provide their ID",
         month="Their birthday month (1-12)",
@@ -126,7 +127,7 @@ class birthday_handling(commands.Cog):
         )
 
 
-    @app_commands.command(name="edit_birthday", description="Edit an existing birthday entry")
+    @birthday_group.command(name="edit", description="Edit an existing birthday entry")
     @app_commands.describe(
         user="select a user or provide their ID",
         month="Their birthday month (1-12)",
@@ -176,7 +177,7 @@ class birthday_handling(commands.Cog):
         )
 
 
-    @app_commands.command(name="remove_birthday", description="Remove a birthday entry")
+    @birthday_group.command(name="remove", description="Remove a birthday entry")
     @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.has_any_role(professors, goblins, poltergeists, test_role)
     async def remove_birthday(
@@ -202,7 +203,7 @@ class birthday_handling(commands.Cog):
         )
 
 
-    @app_commands.command(name="show_birthday", description="Show a user's birthday information")
+    @birthday_group.command(name="show", description="Show a user's birthday information")
     @app_commands.describe(user="Select a user or provide their ID")
     async def show_birthday(
         self,
@@ -223,7 +224,7 @@ class birthday_handling(commands.Cog):
                 f"{user.mention}'s birthday is on {day}/{month}.", ephemeral=True)
 
 
-    @app_commands.command(name="force_wish", description="Force a wish checking cycle to run")
+    @birthday_group.command(name="force", description="Force a wish checking cycle to run")
     @app_commands.checks.has_any_role(professors, goblins, test_role)
     async def force_wish(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
