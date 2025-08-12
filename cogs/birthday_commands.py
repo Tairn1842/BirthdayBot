@@ -48,7 +48,7 @@ class birthday_handling(commands.Cog):
             else:
                 wish_colour = discord.Colour.blurple()
 
-            birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.mention}!", 
+            birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.name}!", 
                 description="Here is your personalised wish!", 
                 colour=wish_colour)
             birthday_embed.set_thumbnail(url=avatar_url)
@@ -56,7 +56,7 @@ class birthday_handling(commands.Cog):
             await channel.send(
                 birthday_member.mention,
                 embed=birthday_embed,
-                allowed_mentions=discord.AllowedMentions.all(),
+                allowed_mentions=discord.AllowedMentions(users=True),
             )
 
         await mark_sent(to_wish)
