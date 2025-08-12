@@ -29,6 +29,7 @@ class birthday_handling(commands.Cog):
 
         for i in to_wish:
             birthday_member = guild.get_member(i) or await guild.fetch_member(i)
+            avatar_url = birthday_member.avatar.url
 
             if any(r.id == gryffindor_role for r in birthday_member.roles):
                 role = guild.get_role(gryffindor_role)
@@ -48,11 +49,12 @@ class birthday_handling(commands.Cog):
             birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.mention}!", 
                 description="Here is your personalised wish!", 
                 colour=wish_colour)
+            birthday_embed.set_thumbnail(url=avatar_url)
             channel = guild.get_channel(clock_tower) or await guild.fetch_channel(clock_tower)
             await channel.send(
                 birthday_member.mention,
                 embed=birthday_embed,
-                allowed_mentions=discord.AllowedMentions(users=True, roles=True, everyone=False),
+                allowed_mentions=discord.AllowedMentions.all(),
             )
 
         await mark_sent(to_wish)
