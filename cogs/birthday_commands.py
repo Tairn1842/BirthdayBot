@@ -26,6 +26,7 @@ class birthday_handling(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+
     async def wish_sender(self, to_wish):
         guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
 
@@ -66,6 +67,7 @@ class birthday_handling(commands.Cog):
             )
 
         await mark_sent(to_wish)
+
 
     async def wish_checker(self, bot: commands.Bot):
         while True:
@@ -124,15 +126,21 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
             return
-        await db.execute(
-            "INSERT INTO birthdays (user_id, month, day, timezone) VALUES (?,?,?,?)",
-            (user.id, month, day, timezone),
-        )
-        await db.commit()
-        await interaction.followup.send(
-            f"Added birthday for {user.mention} on {day}/{month} in timezone {timezone}.",
-            ephemeral=True,
-        )
+        try:
+            await db.execute(
+                "INSERT INTO birthdays (user_id, month, day, timezone) VALUES (?,?,?,?)",
+                (user.id, month, day, timezone),
+                )
+            await db.commit()
+            await interaction.followup.send(
+                f"Added birthday for {user.mention} on {day}/{month} in timezone {timezone}.",
+                ephemeral=True,
+            )
+        except Exception as e:
+            print("Error entering data: ",e)
+            await interaction.followup.send(
+                "Error entering data, please check for mistakes and try again.", 
+                ephemeral=True)
 
 
     @birthday_group.command(name="edit", description="Edit an existing birthday entry")
@@ -151,7 +159,7 @@ class birthday_handling(commands.Cog):
         day: int = None, 
         month: int = None, 
         timezone: str = None
-    ):
+        ):
         await interaction.response.defer(ephemeral=True)
         if timezone is not None:
             try:
@@ -160,14 +168,14 @@ class birthday_handling(commands.Cog):
                 await interaction.followup.send(
                     "Invalid timezone. Please select one from the autocomplete list.",
                     ephemeral=True,
-                )
+                    )
                 return
 
         if month is None and day is None and timezone is None:
             await interaction.followup.send(
                 "No changes provided. Specify at least one of month, day, or timezone.",
                 ephemeral=True,
-            )
+                )
             return
 
         db = await init_db()
@@ -177,28 +185,35 @@ class birthday_handling(commands.Cog):
             await interaction.followup.send(
                 f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.",
                 ephemeral=True,
-            )
+                )
             return
 
-        current_month, current_day, current_tz = row
-        new_month = month if month is not None else current_month
-        new_day = day if day is not None else current_day
-        new_tz = timezone if timezone is not None else current_tz
+        try:
+            current_month, current_day, current_tz = row
+            new_month = month if month is not None else current_month
+            new_day = day if day is not None else current_day
+            new_tz = timezone if timezone is not None else current_tz
 
-        await db.execute(
-            """
-            UPDATE birthdays
-            SET month = ?, day = ?, timezone = ?
-            WHERE user_id = ?
-            """,
-            (new_month, new_day, new_tz, user.id),
-        )
-        await db.commit()
+            await db.execute(
+                """
+                UPDATE birthdays
+                SET month = ?, day = ?, timezone = ?
+                WHERE user_id = ?
+                """,
+                (new_month, new_day, new_tz, user.id),
+                )
+            await db.commit()
 
-        await interaction.followup.send(
-            f"Updated birthday for {user.mention} to {new_day}/{new_month} in timezone {new_tz}.",
-            ephemeral=True,
-        )
+            await interaction.followup.send(
+                f"Updated birthday for {user.mention} to {new_day}/{new_month} in timezone {new_tz}.",
+                ephemeral=True,
+                )
+        except Exception as e:
+            print(f"Error updating values: {e}")
+            await interaction.followup.send(
+                "Error updating data. Please check for mistakes and try again.", 
+                ephemeral=True
+                )
 
 
     @birthday_group.command(name="remove", description="Remove a birthday entry")
