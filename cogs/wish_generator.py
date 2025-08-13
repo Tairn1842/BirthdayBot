@@ -8,33 +8,33 @@ openai_key = os.getenv("openai_token")
 openai_client = AsyncOpenAI(api_key=openai_key)
 
 gryffindor_message = """
-Generate a three-sentence birthday wish in a tone inspired by 
-the qualities of Professor Minerva McGonagall from Harry Potter. 
-If unable to follow the directive exactly, **do not mention it in the response**.
+Generate a three-sentence birthday wish in a tone **inspired** by the qualities of Professor Minerva McGonagall from Harry Potter. 
+**If unable to follow the directive exactly, do not mention it in the response**.
+End the response by signing off as the character.
 """
 
 hufflepuff_message = """ 
-Generate a three-sentence birthday wish in a tone inspired by 
-the qualities of Professor Sprout from Harry Potter. 
-If unable to follow the directive exactly, **do not mention it in the response**.
+Generate a three-sentence birthday wish in a tone **inspired** by the qualities of Professor Sprout from Harry Potter. 
+**If unable to follow the directive exactly, do not mention it in the response**.
+End the response by signing off as the character.
 """
 
 ravenclaw_message = """
-Generate a three-sentence birthday wish in a tone inspired by 
-the qualities of Professor Filius Flitwick from Harry Potter. 
-If unable to follow the directive exactly, **do not mention it in the response**.
+Generate a three-sentence birthday wish in a tone **inspired** by the qualities of Professor Filius Flitwick from Harry Potter. 
+**If unable to follow the directive exactly, do not mention it in the response**.
+End the response by signing off as the character.
 """
 
 slytherin_message = """
-Generate a three-sentence birthday wish in a tone inspired by 
-the qualities of Professor Dolores Umbridge from Harry Potter. 
-If unable to follow the directive exactly, **do not mention it in the response**.
+Generate a three-sentence birthday wish in a tone **inspired** by the qualities of Professor Dolores Umbridge from Harry Potter. 
+**If unable to follow the directive exactly, do not mention it in the response**.
+End the response by signing off as the character.
 """
 
 test_message = """
-Generate a three-sentence birthday wish in a tone inspired by 
-the qualities of Professor Severus Snape from Harry Potter. 
-If unable to follow the directive exactly, **do not mention it in the response**.
+Generate a three-sentence birthday wish in a tone **inspired** by the qualities of Professor Severus Snape from Harry Potter. 
+**If unable to follow the directive exactly, do not mention it in the response**.
+End the response by signing off as the character.
 """
 
 async def wish_creator(house,user_name):
@@ -49,10 +49,9 @@ async def wish_creator(house,user_name):
     else:
         system_message = test_message
     response = await openai_client.chat.completions.create(
-        model = "gpt-5-mini",
+        model = "gpt-4.1-mini",
         messages=[{"role":"system", "content":system_message},
-                  {"role":"user", "content":f"wish user {user_name} a happy birthday"}],
-        reasoning_effort="medium")
+                  {"role":"user", "content":f"wish user {user_name} a happy birthday"}])
     return response.choices[0].message.content.strip()
 
 async def setup(bot: commands.Bot):
