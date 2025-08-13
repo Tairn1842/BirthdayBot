@@ -1,7 +1,6 @@
-import discord
+import discord, re, asyncio, random
 from discord import app_commands
 from discord.ext import commands
-import re, asyncio
 from zoneinfo import ZoneInfo, available_timezones
 from .birthday_handling import *
 from .wish_generator import wish_creator
@@ -51,8 +50,9 @@ class birthday_handling(commands.Cog):
                 house = 4
                 wish_colour = (role and role.color) or discord.Colour.from_str("#1A472A")
             else:
-                wish_colour = discord.Colour.blurple()
-                house = 5
+                role = guild.get_role(test_role)
+                wish_colour = (role and role.color) or discord.Colour.blurple()
+                house = random.randint(1,5)
 
             birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.name}!", 
                 description=await wish_creator(house, birthday_member.name), 
@@ -137,9 +137,8 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
             )
         except Exception as e:
-            print("Error entering data: ",e)
             await interaction.followup.send(
-                "Error entering data, please check for mistakes and try again.", 
+                f"Error entering data, please check for mistakes and try again.\n{e}", 
                 ephemeral=True)
 
 
@@ -209,9 +208,8 @@ class birthday_handling(commands.Cog):
                 ephemeral=True,
                 )
         except Exception as e:
-            print(f"Error updating values: {e}")
             await interaction.followup.send(
-                "Error updating data. Please check for mistakes and try again.", 
+                f"Error updating data. Please check for mistakes and try again.\n{e}", 
                 ephemeral=True
                 )
 
