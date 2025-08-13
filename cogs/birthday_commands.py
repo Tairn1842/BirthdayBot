@@ -79,13 +79,15 @@ class birthday_handling(commands.Cog):
             if current.lower() in tz.lower()
         ][:25]
 
+
     birthday_group = app_commands.Group(name="birthday", description = "birthday commands")
+
 
     @birthday_group.command(name="add", description="Add a birthday to the database")
     @app_commands.describe(
         user="Select a user or provide their ID",
-        month="Their birthday month (1-12)",
         day="Their birthday day (1-31)",
+        month="Their birthday month (1-12)",
         timezone="Their IANA timezone (e.g. 'America/New_York')",
     )
     @app_commands.autocomplete(timezone = timezone_autocomplete)
@@ -94,8 +96,8 @@ class birthday_handling(commands.Cog):
         self,
         interaction: discord.Interaction,
         user: discord.Member,
-        month: int,
         day: int,
+        month: int,
         timezone: str = "UTC",
     ):
         await interaction.response.defer(ephemeral=True)
@@ -112,7 +114,7 @@ class birthday_handling(commands.Cog):
             row = await cur.fetchone()
         if row:
             await interaction.followup.send(
-                f"{user.mention} already has a birthday entry.",
+                f"{user.mention} already has a birthday entry. Use /birthday show to view.",
                 ephemeral=True,
             )
             return
@@ -122,7 +124,7 @@ class birthday_handling(commands.Cog):
         )
         await db.commit()
         await interaction.followup.send(
-            f"Added birthday for {user.mention} on {month}/{day} in timezone {timezone}.",
+            f"Added birthday for {user.mention} on {day}/{month} in timezone {timezone}.",
             ephemeral=True,
         )
 
@@ -130,8 +132,8 @@ class birthday_handling(commands.Cog):
     @birthday_group.command(name="edit", description="Edit an existing birthday entry")
     @app_commands.describe(
         user="select a user or provide their ID",
-        month="Their birthday month (1-12)",
         day="Their birthday day (1-31)",
+        month="Their birthday month (1-12)",
         timezone="Their IANA timezone (e.g. 'America/New_York')",
     )
     @app_commands.autocomplete(timezone=timezone_autocomplete)
@@ -140,39 +142,55 @@ class birthday_handling(commands.Cog):
         self,
         interaction: discord.Interaction,
         user: discord.Member,
-        month: int,
-        day: int,
-        timezone: str = "UTC",
+        day: int = None, 
+        month: int = None, 
+        timezone: str = None
     ):
         await interaction.response.defer(ephemeral=True)
-        try:
-            ZoneInfo(timezone)
-        except Exception:
+        if timezone is not None:
+            try:
+                ZoneInfo(timezone)
+            except Exception:
+                await interaction.followup.send(
+                    "Invalid timezone. Please select one from the autocomplete list.",
+                    ephemeral=True,
+                )
+                return
+
+        if month is None and day is None and timezone is None:
             await interaction.followup.send(
-                "Invalid timezone. Please select one from the autocomplete list.",
+                "No changes provided. Specify at least one of month, day, or timezone.",
                 ephemeral=True,
             )
             return
+
         db = await init_db()
-        async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
+        async with db.execute("SELECT month, day, timezone FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row = await cur.fetchone()
         if not row:
             await interaction.followup.send(
-                f"{user.mention} does not have a birthday entry.",
+                f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.",
                 ephemeral=True,
             )
             return
+
+        current_month, current_day, current_tz = row
+        new_month = month if month is not None else current_month
+        new_day = day if day is not None else current_day
+        new_tz = timezone if timezone is not None else current_tz
+
         await db.execute(
             """
             UPDATE birthdays
             SET month = ?, day = ?, timezone = ?
             WHERE user_id = ?
             """,
-            (month, day, timezone, user.id),
+            (new_month, new_day, new_tz, user.id),
         )
         await db.commit()
+
         await interaction.followup.send(
-            f"Updated birthday for {user.mention} to {month}/{day} in timezone {timezone}.",
+            f"Updated birthday for {user.mention} to {new_day}/{new_month} in timezone {new_tz}.",
             ephemeral=True,
         )
 
@@ -191,7 +209,7 @@ class birthday_handling(commands.Cog):
             row = await cur.fetchone()
         if not row:
             await interaction.followup.send(
-                f"{user.mention} does not have a birthday entry.",
+                f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.",
                 ephemeral=True,
             )
             return
@@ -210,18 +228,21 @@ class birthday_handling(commands.Cog):
         interaction: discord.Interaction, 
         user: discord.Member
     ):
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
         db = await init_db()
         async with db.execute("SELECT month, day FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row  = await cur.fetchone()
             if row is None:
-                await interaction.followup.send(
-                    f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.", 
-                    ephemeral=True)
+                entry_not_found_embed = discord.Embed(title="Entry not found",
+                description=f"{user.mention} does not have a birthday entry. Contact your nearest poltergeist to add one.", 
+                colour=discord.Colour.red())
+                await interaction.followup.send(embed=entry_not_found_embed, allowed_mentions=discord.AllowedMentions(users=True))
                 return
             month, day = row
-            await interaction.followup.send(
-                f"{user.mention}'s birthday is on {day}/{month}.", ephemeral=True)
+            show_embed = discord.Embed(title=f"{user.name}'s Birthday", 
+                description=f"{user.mention}'s birthday is on {day}/{month}.", 
+                colour=discord.Colour.blurple())
+            await interaction.followup.send(embed=show_embed, allowed_mentions=discord.AllowedMentions(users=True))
 
 
     @birthday_group.command(name="force", description="Force a wish checking cycle to run")
