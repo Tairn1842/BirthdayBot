@@ -1,10 +1,10 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import re
-import asyncio
+import re, asyncio
 from zoneinfo import ZoneInfo, available_timezones
 from .birthday_handling import *
+from .wish_generator import wish_creator
 
 
 gryffindor_role = 524558749512499230
@@ -35,23 +35,29 @@ class birthday_handling(commands.Cog):
 
             if any(r.id == gryffindor_role for r in birthday_member.roles):
                 role = guild.get_role(gryffindor_role)
+                house = 1
                 wish_colour = (role and role.color) or discord.Colour.from_str("#740001")
             elif any(r.id == hufflepuff_role for r in birthday_member.roles):
                 role = guild.get_role(hufflepuff_role)
+                house = 2
                 wish_colour = (role and role.color) or discord.Colour.from_str("#FFD800")
             elif any(r.id == ravenclaw_role for r in birthday_member.roles):
                 role = guild.get_role(ravenclaw_role)
+                house = 3
                 wish_colour = (role and role.color) or discord.Colour.from_str("#0E1A40")
             elif any(r.id == slytherin_role for r in birthday_member.roles):
                 role = guild.get_role(slytherin_role)
+                house = 4
                 wish_colour = (role and role.color) or discord.Colour.from_str("#1A472A")
             else:
                 wish_colour = discord.Colour.blurple()
+                house = 5
 
             birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.name}!", 
-                description="Here is your personalised wish!", 
+                description=await wish_creator(house, birthday_member.name), 
                 colour=wish_colour)
             birthday_embed.set_thumbnail(url=avatar_url)
+            birthday_embed.set_image(url=r"https://img.freepik.com/premium-photo/birthday-cake-magical-background-with-bokeh-sparkles-happy-birthday-greeting-card-design_174533-13977.jpg")
             channel = guild.get_channel(test_channel) or await guild.fetch_channel(test_channel)
             await channel.send(
                 birthday_member.mention,
@@ -253,8 +259,8 @@ class birthday_handling(commands.Cog):
             to_wish = await birthay_parser(self.bot)
             if to_wish:
                 await self.wish_sender(to_wish)
-        except Exception:
-            pass
+        except Exception as e:
+            print("error",e)
         await interaction.followup.send("Force wish cycle completed.", ephemeral=True)
             
 
