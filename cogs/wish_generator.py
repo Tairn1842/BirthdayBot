@@ -37,7 +37,7 @@ Generate a three-sentence birthday wish in a tone **inspired** by the qualities 
 End the response by signing off as the character.
 """
 
-async def wish_creator(house,user_name):
+async def wish_creator(house):
     if house == 1:
         system_message = gryffindor_message
     elif house == 2:
@@ -51,7 +51,7 @@ async def wish_creator(house,user_name):
     response = await openai_client.chat.completions.create(
         model = "gpt-4.1-mini",
         messages=[{"role":"system", "content":system_message},
-                  {"role":"user", "content":f"wish user {user_name} a happy birthday"}])
+                  {"role":"user", "content":"wish the user a happy birthday"}])
     return response.choices[0].message.content.strip()
 
 async def setup(bot: commands.Bot):

@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo, available_timezones
 import importlib
 import discord
 
-guild_id = 1262748050535878816
+guild_id = 524552788932558848
 
 
 db_path = "bot.db"

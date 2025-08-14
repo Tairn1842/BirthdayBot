@@ -1,7 +1,7 @@
 import discord, time, textwrap
 from discord import app_commands
 from discord.ext import commands
-from .birthday_commands import poltergeists, goblins, professors, test_role
+from .birthday_commands import poltergeists, goblins, professors
 
 
 class help_pages(discord.ui.View):
@@ -41,7 +41,7 @@ class general_commands(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="ping", description="Check the bot's latency")
-    @app_commands.checks.has_any_role(professors, goblins, poltergeists, test_role)
+    @app_commands.checks.has_any_role(professors, goblins)
     async def ping_command(self, interaction: discord.Interaction):
         await interaction.response.defer()
         latency = self.bot.latency * 1000
@@ -54,7 +54,7 @@ class general_commands(commands.Cog):
 
 
     @app_commands.command(name="help", description="Get help with the bot's commands")
-    @app_commands.checks.has_any_role(professors, goblins, poltergeists, test_role)
+    @app_commands.checks.has_any_role(professors, goblins)
     async def help_command(self, interaction: discord.Interaction):
         await interaction.response.defer()
 
@@ -102,7 +102,7 @@ class general_commands(commands.Cog):
 
 
     @commands.command()
-    @commands.has_any_role(goblins, professors, test_role)
+    @commands.has_any_role(goblins, professors)
     async def sync(self, ctx: commands.Context):
         start_time = time.time()
         try:
