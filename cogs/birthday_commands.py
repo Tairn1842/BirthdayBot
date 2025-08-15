@@ -39,8 +39,6 @@ class birthday_handling(commands.Cog):
                 house = 3
             elif any(r.id == slytherin_role for r in birthday_member.roles):
                 house = 4
-            else:
-                house = random.randint(1,5)
 
             birthday_embed = discord.Embed(title=f"Happy Birthday {birthday_member.name}!", 
                 description=await wish_creator(house), 
