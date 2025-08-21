@@ -1,11 +1,11 @@
-from together import AsyncTogether
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from discord.ext import commands
 import os, random, re
 
 load_dotenv()
-wisher_client = AsyncTogether(api_key=os.getenv("together_token"))
-wisher_model = "Qwen/Qwen3-235B-A22B-Instruct-2507-tput"
+wisher_client = AsyncOpenAI(api_key=os.getenv("openai_api_key"))
+wisher_model = "gpt-4.1"
 
 
 magical_characters = ["Albus Dumbledore", "Minerva McGonagall", "Oliver Wood", "Percy Weasley", "Remus Lupin", 
@@ -23,13 +23,16 @@ async def wish_creator():
     **If unable to follow the directive exactly, do not mention it in the response**.
     End the response by signing off as the character.
     """
-    response = await wisher_client.chat.completions.create(
+    response = await wisher_client.responses.create(
         model = wisher_model,
-        messages=[{"role":"system", "content":system_message},
-                  {"role":"user", "content":"wish the user a happy birthday"}])
-    ai_response = response.choices[0].message.content
-    clean = re.sub(r"<think>.*?</think>", "", ai_response, flags=re.DOTALL).strip()
-    return clean
+        instructions=system_message,
+        input="Wish the user a happy birthday!", 
+        temperature=1,
+        max_output_tokens=512, 
+        store=False
+    )
+    ai_response = response.output_text.strip()
+    return ai_response
 
 async def setup(bot: commands.Bot):
     pass
