@@ -13,8 +13,8 @@ magical_characters = ["Albus Dumbledore", "Minerva McGonagall", "Oliver Wood", "
                       "Nymphadora Tonks", "Fillius Flitwick", "Gilderoy Lockhart", "Helena Ravenclaw", 
                       "Lord Voldermort", "Lucius Malfoy", "Bellatrix Lestrange", "Dolores Umbridge", 
                       "Severus Snape", "Horace Slughorn", "Rubeus Hagrid", "Sybill Trewalney", "Alastor Moody", 
-                      "Cedric Diggory", "Harry Potter", "Ron Weasley", "Hermione Granger", "Fred Weasley", "Geroge Weasley", 
-                      "Ginny Weasley", "Dobby", "Neville Longbottom", "Luna Lovegood", "Draco Malfoy"]
+                      "Cedric Diggory", "Harry Potter", "Ron Weasley", "Hermione Granger", "Fred Weasley", "George Weasley", 
+                      "Ginny Weasley", "Dobby", "Neville Longbottom", "Luna Lovegood", "Draco Malfoy", "Peeves"]
 async def wish_creator():
     character = magical_characters[random.randint(0,(len(magical_characters)-1))]
 

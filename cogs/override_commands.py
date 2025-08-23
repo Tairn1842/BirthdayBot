@@ -6,6 +6,25 @@ from .birthday_handling import *
 from .variables import *
 
 
+class confirmation_check(discord.ui.View):
+    def __init__ (self):
+        super().__init__(timeout=15)
+        self.check_message = 0
+    
+    async def on_timeout(self):
+        self.check_message = 2
+        self.stop()
+    
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, custom_id="confirm")
+    async def on_confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.check_message = 1
+        self.stop()
+    
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, custom_id="reject")
+    async def on_cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.stop()
+
+
 class override_commands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -84,29 +103,40 @@ class override_commands(commands.Cog):
             await interaction.followup.send(f"Error: {e}")
             return
 
-        db = await init_db()
-        async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
-            row = await cur.fetchone()
-        if row:
-            await interaction.followup.send(
-                f"{user.mention} already has a birthday entry. Use /birthday show to view.",
-                ephemeral=True,
-            )
+        view = confirmation_check()
+        await interaction.followup.send(f"You are attempting to add a birthday entry for {user.mention} with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", view=view)
+        await view.wait()
+        if view.check_message == 2:
+            await interaction.edit_original_response(content="Interaction timed out. Please try again.", view=None)
             return
-        try:
-            await db.execute(
-                "INSERT INTO birthdays (user_id, month, day, timezone) VALUES (?,?,?,?)",
-                (user.id, month_int, day, timezone),
+        if view.check_message == 0:
+            await interaction.edit_original_response(content="Entry addition cancelled", view=None)
+            return
+        if view.check_message == 1:
+            db = await init_db()
+            async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
+                row = await cur.fetchone()
+            if row:
+                await interaction.edit_original_response(
+                    content=f"{user.mention} already has a birthday entry. Use /birthday show to view.",
+                    view=None
                 )
-            await db.commit()
-            await interaction.followup.send(
-                f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.",
-                ephemeral=True,
-            )
-        except Exception as e:
-            await interaction.followup.send(
-                f"Error entering data, please check for mistakes and try again.\n{e}", 
-                ephemeral=True)
+                return
+            try:
+                await db.execute(
+                    "INSERT INTO birthdays (user_id, month, day, timezone) VALUES (?,?,?,?)",
+                    (user.id, month_int, day, timezone),
+                    )
+                await db.commit()
+                await interaction.edit_original_response(
+                    content=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.",
+                    view=None
+                )
+            except Exception as e:
+                await interaction.edit_original_response(
+                    content=f"Error entering data, please check for mistakes and try again.\n{e}", 
+                    view=None
+                    )
 
 
     @override_group.command(name="remove", description="Remove a birthday entry")
@@ -118,21 +148,31 @@ class override_commands(commands.Cog):
         user: discord.Member,
     ):
         await interaction.response.defer(ephemeral=True)
-        db = await init_db()
-        async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
-            row = await cur.fetchone()
-        if not row:
-            await interaction.followup.send(
-                f"{user.mention} does not have a birthday entry.",
-                ephemeral=True,
-            )
+        view = confirmation_check()
+        await interaction.followup.send(content=f"You are attempting to delete the birthday entry for {user.mention}. Proceed?", view=view)
+        await view.wait()
+        if view.check_message == 2:
+            await interaction.edit_original_response(content="Interaction timed out. Please try again.", view=None)
             return
-        await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
-        await db.commit()
-        await interaction.followup.send(
-            f"Removed birthday entry for {user.mention}.",
-            ephemeral=True,
-        )
+        if view.check_message == 0:
+            await interaction.edit_original_response(content="Entry deletion cancelled.", view=None)
+            return
+        if view.check_message == 1:
+            db = await init_db()
+            async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
+                row = await cur.fetchone()
+            if not row:
+                await interaction.edit_original_response(
+                    content=f"{user.mention} does not have a birthday entry.",
+                    view=None
+                )
+                return
+            await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
+            await db.commit()
+            await interaction.edit_original_response(
+                content=f"Removed birthday entry for {user.mention}.",
+                view=None
+            )
 
 
     @override_group.command(name="force", description="Force a wish checking cycle to run")
