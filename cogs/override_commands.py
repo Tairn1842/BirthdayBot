@@ -84,8 +84,6 @@ class override_commands(commands.Cog):
                 "You can find the IANA code at https://datetime.app/iana-timezones",
                 colour=discord.Colour.red())
             await interaction.followup.send(embed=invalid_timezone_embed)
-                colour=discord.Colour.red())
-            await interaction.followup.send(invalid_timezone_embed)
             return
 
         try:
