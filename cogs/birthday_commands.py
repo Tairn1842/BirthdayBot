@@ -81,11 +81,11 @@ class birthday_commands(commands.Cog):
         try:
             ZoneInfo(timezone)
         except Exception:
-            await interaction.followup.send(
-                "Invalid timezone. Please select one from the autocomplete list.\n"
+            invalid_timezone_embed = discord.Embed(title="That's not a timezone...", 
+                description="Invalid timezone. Please select one from the autocomplete list.\n"
                 "You can find the IANA code at https://datetime.app/iana-timezones",
-                ephemeral=True,
-            )
+                colour=discord.Colour.red())
+            await interaction.followup.send(invalid_timezone_embed)
             return
 
         try:
@@ -96,50 +96,69 @@ class birthday_commands(commands.Cog):
             else:
                 raise Exception("Month not found, enter the month properly.")
         except Exception as e:
-            await interaction.followup.send(f"Error: {e}", ephemeral=True)
+            month_list_error=discord.Embed(title="Well, that didn't work.",
+                description = f"{e}", 
+                colour=discord.Colour.red())
+            await interaction.followup.send(embed=month_list_error)
             return
 
         try:
             await self.month_checker(date=day, month=month_int)
         except Exception as e:
-            await interaction.followup.send(f"Error: {e}")
+            month_check_error=discord.Embed(title="Well, that didn't work.", 
+                            description = f"{e}", 
+                            colour=discord.Colour.red())
+            await interaction.followup.send(embed=month_check_error)
             return
 
         user = interaction.user
         view  = confirmation_check()
-        await interaction.followup.send(content=f"You are attempting to set your birthday with date: {day}, month: {month}, and time-zone: {timezone}. Proceed?", view=view)
+        confirmation_embed = discord.Embed(title="Are you sure?",
+            description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
+            colour = interaction.user.colour)
+        await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
+
         if view.check_message == 2:
-            await interaction.edit_original_response(content="Interaction timed out, please try again.", view=None)
+            timed_out_embed = discord.Embed(title="Too slow!",
+                description="Interaction timed out. Please try again.", 
+                colour=discord.Colour.red())
+            await interaction.edit_original_response(embed=timed_out_embed, view=None)
             return
+
         if view.check_message == 0:
-            await interaction.edit_original_response(content="Entry addition cancelled.", view = None)
+            cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
+                description="Entry addition cancelled", 
+                colour=discord.Colour.red())
+            await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
             return
+
         if view.check_message == 1:
             db = await init_db()
             async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
                 row = await cur.fetchone()
             if row:
-                await interaction.edit_original_response(
-                    content=f"{user.mention} already has a birthday entry. Use /birthday show to view.",
-                    view=None
-                )
+                existing_birthday_embed = discord.Embed(title="There's something in the way...",
+                    description=f"{user.mention} already has a birthday entry. Use /birthday show to view.", 
+                    colour=discord.Colour.red())
+                await interaction.edit_original_response(embed=existing_birthday_embed, view=None)
                 return
+
             try:
                 await db.execute(
                     "INSERT INTO birthdays (user_id, month, day, timezone) VALUES (?,?,?,?)",
                     (user.id, month_int, day, timezone),
                     )
                 await db.commit()
-                await interaction.edit_original_response(
-                    content=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.",
-                    view=None
-                )
+                add_success_embed  = discord.Embed(title="Oh look! It worked!",
+                    description=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.", 
+                    colour=discord.Colour.green())
+                await interaction.edit_original_response(embed=add_success_embed, view=None)
             except Exception as e:
-                await interaction.edit_original_response(
-                    f"Error entering data, please check for mistakes and try again.\n{e}",
-                    view=None
-                )
+                entry_error_embed=discord.Embed(title="Well, that didn't work.",
+                    description=f"Error entering data, please check for mistakes and try again.\n{e}", 
+                    colour=discord.Colour.red())
+                await interaction.edit_original_response(embed=entry_error_embed, view=None)
 
 
     @birthday_group.command(name="remove", description="Remove your birthday entry")
@@ -151,31 +170,43 @@ class birthday_commands(commands.Cog):
     ):
         await interaction.response.defer(ephemeral=True)
         view = confirmation_check()
-        await interaction.followup.send(content="You are attempting to delete your birthday information. Proceed?", view=view)
+        check_embed = discord.Embed(title="Are you sure?",
+            description=f"You are attempting to delete the birthday entry for yourself. Proceed?", 
+            colour=interaction.user.colour)
+        await interaction.followup.send(embed=check_embed, view=view)
         await view.wait()
+
         if view.check_message == 2:
-            await interaction.edit_original_response(content="Interaction timed out. Please try again.", view=None)
+            timeout_embed = discord.Embed(title="Too slow!",
+            description="Interaction timed out!", 
+            colour=discord.Colour.red())
+            await interaction.edit_original_response(embed=timeout_embed, view=None)
             return
+
         if view.check_message == 0:
-            await interaction.edit_original_response(content="Entry deletion cancelled.", view = None)
+            cancel_embed = discord.Embed(title="Someone's Indecisive!",
+            description="Entry deletion cancelled.", 
+            colour=discord.Colour.red())
+            await interaction.edit_original_response(embed=cancel_embed, view=None)
             return
+
         if view.check_message == 1:
             user = interaction.user
             db = await init_db()
             async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
                 row = await cur.fetchone()
             if not row:
-                await interaction.edit_original_response(
-                    content=f"{user.mention} does not have a birthday entry.",
-                    view=None
-                )
+                no_birthday_embed = discord.Embed(title="Such empty...",
+                    description=f"{user.mention} doesn't have a birthday entry.", 
+                    colour=discord.Colour.red())
+                await interaction.edit_original_response(embed=no_birthday_embed, view=None)
                 return
             await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
             await db.commit()
-            await interaction.edit_original_response(
-                content=f"Removed birthday entry for {user.mention}.",
-                view=None
-            )
+            removal_success_embed = discord.Embed(title="Oh look! It worked!",
+                description=f"Removed birthday entry for {user.mention}.", 
+                colour=discord.Colour.green())
+            await interaction.edit_original_response(embed=removal_success_embed, view=None)
 
 
     @birthday_group.command(name="show", description="Show a user's birthday information")
@@ -194,10 +225,10 @@ class birthday_commands(commands.Cog):
         async with db.execute("SELECT month, day FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row  = await cur.fetchone()
             if row is None:
-                entry_not_found_embed = discord.Embed(title="Entry not found",
+                entry_not_found_embed = discord.Embed(title="Such empty...",
                 description=f"{user.mention} does not have a birthday entry.", 
                 colour=discord.Colour.red())
-                await interaction.followup.send(embed=entry_not_found_embed, allowed_mentions=discord.AllowedMentions(users=True))
+                await interaction.followup.send(embed=entry_not_found_embed)
                 return
             month_int, day = row
             show_embed = discord.Embed(title=f"{user.name}'s Birthday", 
@@ -205,7 +236,7 @@ class birthday_commands(commands.Cog):
                 colour=user.colour)
             if user.id != interaction.user.id:
                 show_embed.set_footer(text="stop stalking other people smh")
-            await interaction.followup.send(embed=show_embed, allowed_mentions=discord.AllowedMentions(users=True))
+            await interaction.followup.send(embed=show_embed)
 
 
 async def setup(bot: commands.Bot):
