@@ -50,7 +50,7 @@ class general_commands(commands.Cog):
             description=f"Latency: {latency: .2f} ms", 
             color=interaction.user.colour
         )
-        await interaction.followup.send(embed=ping_embed, ephemeral=True)
+        await interaction.followup.send(embed=ping_embed)
 
 
     @app_commands.command(name="help", description="Get help with the bot's commands")
@@ -98,7 +98,7 @@ class general_commands(commands.Cog):
 
         help_pages_list = [birthday_setting_info, command_list]
         view = help_pages(user= interaction.user, embeds=help_pages_list)
-        await interaction.followup.send(embed=help_pages_list[0], view = view, ephemeral=True)
+        await interaction.followup.send(embed=help_pages_list[0], view = view)
 
 
     @commands.command()
