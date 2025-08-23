@@ -83,13 +83,7 @@ class birthday_commands(commands.Cog):
         except Exception:
             invalid_timezone_embed = discord.Embed(title="That's not a timezone...", 
                 description="Invalid timezone. Please select one from the autocomplete list.\n"
-            invalid_timezone_embed = discord.Embed(title="That's not a timezone...", 
-                description="Invalid timezone. Please select one from the autocomplete list.\n"
-            invalid_timezone_embed = discord.Embed(title="That's not a timezone...", 
-                description="Invalid timezone. Please select one from the autocomplete list.\n"
                 "You can find the IANA code at https://datetime.app/iana-timezones",
-                colour=discord.Colour.red())
-            await interaction.followup.send(embed=invalid_timezone_embed)
                 colour=discord.Colour.red())
             await interaction.followup.send(invalid_timezone_embed)
             return
@@ -106,27 +100,11 @@ class birthday_commands(commands.Cog):
                 description = f"{e}", 
                 colour=discord.Colour.red())
             await interaction.followup.send(embed=month_list_error)
-            month_list_error=discord.Embed(title="Well, that didn't work.",
-                description = f"{e}", 
-                colour=discord.Colour.red())
-            await interaction.followup.send(embed=month_list_error)
-            month_list_error=discord.Embed(title="Well, that didn't work.",
-                description = f"{e}", 
-                colour=discord.Colour.red())
-            await interaction.followup.send(embed=month_list_error)
             return
 
         try:
             await self.month_checker(date=day, month=month_int)
         except Exception as e:
-            month_check_error=discord.Embed(title="Well, that didn't work.", 
-                            description = f"{e}", 
-                            colour=discord.Colour.red())
-            await interaction.followup.send(embed=month_check_error)
-            month_check_error=discord.Embed(title="Well, that didn't work.", 
-                            description = f"{e}", 
-                            colour=discord.Colour.red())
-            await interaction.followup.send(embed=month_check_error)
             month_check_error=discord.Embed(title="Well, that didn't work.", 
                             description = f"{e}", 
                             colour=discord.Colour.red())
@@ -139,51 +117,21 @@ class birthday_commands(commands.Cog):
             description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
             colour = interaction.user.colour)
         await interaction.followup.send(embed=confirmation_embed, view=view)
-        confirmation_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
-            colour = interaction.user.colour)
-        await interaction.followup.send(embed=confirmation_embed, view=view)
-        confirmation_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
-            colour = interaction.user.colour)
-        await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
-
-
 
         if view.check_message == 2:
             timed_out_embed = discord.Embed(title="Too slow!",
                 description="Interaction timed out. Please try again.", 
                 colour=discord.Colour.red())
             await interaction.edit_original_response(embed=timed_out_embed, view=None)
-            timed_out_embed = discord.Embed(title="Too slow!",
-                description="Interaction timed out. Please try again.", 
-                colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=timed_out_embed, view=None)
-            timed_out_embed = discord.Embed(title="Too slow!",
-                description="Interaction timed out. Please try again.", 
-                colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=timed_out_embed, view=None)
             return
-
-
 
         if view.check_message == 0:
             cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
                 description="Entry addition cancelled", 
                 colour=discord.Colour.red())
             await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
-            cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
-                description="Entry addition cancelled", 
-                colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
-            cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
-                description="Entry addition cancelled", 
-                colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
             return
-
-
 
         if view.check_message == 1:
             db = await init_db()
@@ -194,17 +142,7 @@ class birthday_commands(commands.Cog):
                     description=f"{user.mention} already has a birthday entry. Use /birthday show to view.", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=existing_birthday_embed, view=None)
-                existing_birthday_embed = discord.Embed(title="There's something in the way...",
-                    description=f"{user.mention} already has a birthday entry. Use /birthday show to view.", 
-                    colour=discord.Colour.red())
-                await interaction.edit_original_response(embed=existing_birthday_embed, view=None)
-                existing_birthday_embed = discord.Embed(title="There's something in the way...",
-                    description=f"{user.mention} already has a birthday entry. Use /birthday show to view.", 
-                    colour=discord.Colour.red())
-                await interaction.edit_original_response(embed=existing_birthday_embed, view=None)
                 return
-
-
 
             try:
                 await db.execute(
@@ -216,23 +154,7 @@ class birthday_commands(commands.Cog):
                     description=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.", 
                     colour=discord.Colour.green())
                 await interaction.edit_original_response(embed=add_success_embed, view=None)
-                add_success_embed  = discord.Embed(title="Oh look! It worked!",
-                    description=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.", 
-                    colour=discord.Colour.green())
-                await interaction.edit_original_response(embed=add_success_embed, view=None)
-                add_success_embed  = discord.Embed(title="Oh look! It worked!",
-                    description=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.", 
-                    colour=discord.Colour.green())
-                await interaction.edit_original_response(embed=add_success_embed, view=None)
             except Exception as e:
-                entry_error_embed=discord.Embed(title="Well, that didn't work.",
-                    description=f"Error entering data, please check for mistakes and try again.\n{e}", 
-                    colour=discord.Colour.red())
-                await interaction.edit_original_response(embed=entry_error_embed, view=None)
-                entry_error_embed=discord.Embed(title="Well, that didn't work.",
-                    description=f"Error entering data, please check for mistakes and try again.\n{e}", 
-                    colour=discord.Colour.red())
-                await interaction.edit_original_response(embed=entry_error_embed, view=None)
                 entry_error_embed=discord.Embed(title="Well, that didn't work.",
                     description=f"Error entering data, please check for mistakes and try again.\n{e}", 
                     colour=discord.Colour.red())
@@ -252,51 +174,21 @@ class birthday_commands(commands.Cog):
             description=f"You are attempting to delete the birthday entry for yourself. Proceed?", 
             colour=interaction.user.colour)
         await interaction.followup.send(embed=check_embed, view=view)
-        check_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to delete the birthday entry for yourself. Proceed?", 
-            colour=interaction.user.colour)
-        await interaction.followup.send(embed=check_embed, view=view)
-        check_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to delete the birthday entry for yourself. Proceed?", 
-            colour=interaction.user.colour)
-        await interaction.followup.send(embed=check_embed, view=view)
         await view.wait()
-
-
 
         if view.check_message == 2:
             timeout_embed = discord.Embed(title="Too slow!",
             description="Interaction timed out!", 
             colour=discord.Colour.red())
             await interaction.edit_original_response(embed=timeout_embed, view=None)
-            timeout_embed = discord.Embed(title="Too slow!",
-            description="Interaction timed out!", 
-            colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=timeout_embed, view=None)
-            timeout_embed = discord.Embed(title="Too slow!",
-            description="Interaction timed out!", 
-            colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=timeout_embed, view=None)
             return
-
-
 
         if view.check_message == 0:
             cancel_embed = discord.Embed(title="Someone's Indecisive!",
             description="Entry deletion cancelled.", 
             colour=discord.Colour.red())
             await interaction.edit_original_response(embed=cancel_embed, view=None)
-            cancel_embed = discord.Embed(title="Someone's Indecisive!",
-            description="Entry deletion cancelled.", 
-            colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=cancel_embed, view=None)
-            cancel_embed = discord.Embed(title="Someone's Indecisive!",
-            description="Entry deletion cancelled.", 
-            colour=discord.Colour.red())
-            await interaction.edit_original_response(embed=cancel_embed, view=None)
             return
-
-
 
         if view.check_message == 1:
             user = interaction.user
@@ -308,25 +200,9 @@ class birthday_commands(commands.Cog):
                     description=f"{user.mention} doesn't have a birthday entry.", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=no_birthday_embed, view=None)
-                no_birthday_embed = discord.Embed(title="Such empty...",
-                    description=f"{user.mention} doesn't have a birthday entry.", 
-                    colour=discord.Colour.red())
-                await interaction.edit_original_response(embed=no_birthday_embed, view=None)
-                no_birthday_embed = discord.Embed(title="Such empty...",
-                    description=f"{user.mention} doesn't have a birthday entry.", 
-                    colour=discord.Colour.red())
-                await interaction.edit_original_response(embed=no_birthday_embed, view=None)
                 return
             await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
             await db.commit()
-            removal_success_embed = discord.Embed(title="Oh look! It worked!",
-                description=f"Removed birthday entry for {user.mention}.", 
-                colour=discord.Colour.green())
-            await interaction.edit_original_response(embed=removal_success_embed, view=None)
-            removal_success_embed = discord.Embed(title="Oh look! It worked!",
-                description=f"Removed birthday entry for {user.mention}.", 
-                colour=discord.Colour.green())
-            await interaction.edit_original_response(embed=removal_success_embed, view=None)
             removal_success_embed = discord.Embed(title="Oh look! It worked!",
                 description=f"Removed birthday entry for {user.mention}.", 
                 colour=discord.Colour.green())
@@ -353,8 +229,6 @@ class birthday_commands(commands.Cog):
                 description=f"{user.mention} does not have a birthday entry.", 
                 colour=discord.Colour.red())
                 await interaction.followup.send(embed=entry_not_found_embed)
-                await interaction.followup.send(embed=entry_not_found_embed)
-                await interaction.followup.send(embed=entry_not_found_embed)
                 return
             month_int, day = row
             show_embed = discord.Embed(title=f"{user.name}'s Birthday", 
@@ -362,8 +236,6 @@ class birthday_commands(commands.Cog):
                 colour=user.colour)
             if user.id != interaction.user.id:
                 show_embed.set_footer(text="stop stalking other people smh")
-            await interaction.followup.send(embed=show_embed)
-            await interaction.followup.send(embed=show_embed)
             await interaction.followup.send(embed=show_embed)
 
 
