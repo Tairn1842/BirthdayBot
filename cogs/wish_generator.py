@@ -1,20 +1,14 @@
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from discord.ext import commands
-import os, random, re
+from .variables import magical_characters
+import os, random
 
 load_dotenv()
 wisher_client = AsyncOpenAI(api_key=os.getenv("openai_api_key"))
 wisher_model = "gpt-4.1"
 
 
-magical_characters = ["Albus Dumbledore", "Minerva McGonagall", "Oliver Wood", "Percy Weasley", "Remus Lupin", 
-                      "Sirius Black", "Molly Weasley", "Arthur Weasley", "Professor Sprout", "Newt Scamander", 
-                      "Nymphadora Tonks", "Fillius Flitwick", "Gilderoy Lockhart", "Helena Ravenclaw", 
-                      "Lord Voldermort", "Lucius Malfoy", "Bellatrix Lestrange", "Dolores Umbridge", 
-                      "Severus Snape", "Horace Slughorn", "Rubeus Hagrid", "Sybill Trewalney", "Alastor Moody", 
-                      "Cedric Diggory", "Harry Potter", "Ron Weasley", "Hermione Granger", "Fred Weasley", "George Weasley", 
-                      "Ginny Weasley", "Dobby", "Neville Longbottom", "Luna Lovegood", "Draco Malfoy", "Peeves"]
 async def wish_creator():
     character = magical_characters[random.randint(0,(len(magical_characters)-1))]
 
