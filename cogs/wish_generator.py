@@ -6,7 +6,7 @@ import os, random
 
 load_dotenv()
 wisher_client = AsyncOpenAI(api_key=os.getenv("openai_api_key"))
-wisher_model = "gpt-4.1"
+wisher_model = "o4-mini"
 
 
 async def wish_creator():
@@ -22,8 +22,10 @@ async def wish_creator():
         instructions=system_message,
         input="Wish the user a happy birthday!", 
         temperature=1,
-        max_output_tokens=512, 
-        store=False
+        reasoning={"effort":"high"},
+        max_output_tokens=2048, 
+        store=False,
+        service_tier="flex"
     )
     ai_response = response.output_text.strip()
     return ai_response

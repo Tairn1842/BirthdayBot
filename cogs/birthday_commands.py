@@ -212,6 +212,7 @@ class birthday_commands(commands.Cog):
     @birthday_group.command(name="show", description="Show a user's birthday information")
     @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
+    @app_commands.checks.has_any_role(professors, goblins, server_staff)
     async def show_birthday(
         self,
         interaction: discord.Interaction, 

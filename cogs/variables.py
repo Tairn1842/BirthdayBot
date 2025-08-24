@@ -14,7 +14,8 @@ magical_characters = ["Albus Dumbledore", "Minerva McGonagall", "Oliver Wood", "
                       "Lord Voldermort", "Lucius Malfoy", "Bellatrix Lestrange", "Dolores Umbridge", 
                       "Severus Snape", "Horace Slughorn", "Rubeus Hagrid", "Sybill Trewalney", "Alastor Moody", 
                       "Cedric Diggory", "Harry Potter", "Ron Weasley", "Hermione Granger", "Fred Weasley", "George Weasley", 
-                      "Ginny Weasley", "Dobby", "Neville Longbottom", "Luna Lovegood", "Draco Malfoy", "Peeves"]
+                      "Ginny Weasley", "Dobby", "Neville Longbottom", "Luna Lovegood", "Draco Malfoy", "Peeves",
+                      "Nearly-Headless Nick"]
 
 from discord.ext import commands
 async def setup(bot: commands.bot):
