@@ -212,7 +212,6 @@ class birthday_commands(commands.Cog):
     @birthday_group.command(name="show", description="Show a user's birthday information")
     @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, goblins, server_staff)
     async def show_birthday(
         self,
         interaction: discord.Interaction, 
@@ -238,6 +237,64 @@ class birthday_commands(commands.Cog):
             if user.id != interaction.user.id:
                 show_embed.set_footer(text="stop stalking other people smh")
             await interaction.followup.send(embed=show_embed)
+    
+
+    @birthday_group.command(name="show_nearest", description="Displays the nearest past and upcoming (registered) birthdays")
+    @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
+    async def db_status(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        db = await init_db()
+        guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
+        status_embed = discord.Embed(title="Nearest birthdays:", 
+                                     description="The nearest past and upcoming (registered) birthdays.",
+                                     colour=interaction.user.colour)
+        today = datetime.now(timezone.utc)
+        today_day, today_month = today.day, today.month
+
+        async with db.execute("""
+                              SELECT user_id, day, month
+                              FROM birthdays
+                              WHERE (month < ?) OR (month = ? AND day <= ?)
+                              ORDER BY month DESC, day DESC
+                              LIMIT 1
+                              """, (today_month, today_month, today_day)
+        ) as cur:
+            row = await cur.fetchone()
+            if not row:
+                status_embed.add_field(name="Such empty...",
+                                       value="There have been no birthdays so far this year.",
+                                       inline=False)
+                pass
+            else:
+                recent_user, recent_day, recent_month = row
+                recent_user_object = guild.get_member(recent_user) or await guild.fetch_member(recent_user)
+                status_embed.add_field(name="Most recent birthday",
+                                       value=f"{recent_user_object.mention} on {recent_day} {self.months_list[recent_month-1]}",
+                                       inline=False)
+                pass
+        
+        async with db.execute("""
+                              SELECT user_id, day, month
+                              FROM birthdays
+                              WHERE (month > ?) OR (month = ? AND day >= ?)
+                              ORDER BY month ASC, day ASC
+                              LIMIT 1
+                              """, (today_month, today_month, today_day)
+        ) as cur:
+            row =  await cur.fetchone()
+            if not row:
+                status_embed.add_field(name="Such empty...",
+                                       value="There are no more birthdays this year.",
+                                       inline=False)
+                pass
+            else:
+                upcoming_user, upcoming_day, upcoming_month = row
+                upcoming_user_object = guild.get_member(upcoming_user) or await guild.fetch_member(upcoming_user)
+                status_embed.add_field(name="Closest upcoming birthday",
+                                       value=f"{upcoming_user_object.mention} on {upcoming_day} {self.months_list[upcoming_month-1]}",
+                                       inline=False)
+                pass
+        await interaction.followup.send(embed=status_embed)
 
 
 async def setup(bot: commands.Bot):

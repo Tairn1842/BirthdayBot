@@ -215,7 +215,78 @@ class override_commands(commands.Cog):
         if to_wish:
             await handling_cog.wish_sender(to_wish)
         await interaction.followup.send("Force wish cycle completed.")
-            
+    
+
+    @override_group.command(name="status", description="Recent/upcoming birthdays and database size")
+    @app_commands.checks.has_any_role(professors, goblins)
+    async def db_status(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        db = await init_db()
+        guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
+        status_embed = discord.Embed(title="Database status information", 
+                                     description="Database size, and recent and upcoming birthdays.",
+                                     colour=interaction.user.colour)
+        today = datetime.now(timezone.utc)
+        today_day, today_month = today.day, today.month
+
+        async with db.execute("""
+                              SELECT user_id, day, month
+                              FROM birthdays
+                              WHERE (month < ?) OR (month = ? AND day <= ?)
+                              ORDER BY month DESC, day DESC
+                              LIMIT 1
+                              """, (today_month, today_month, today_day)
+        ) as cur:
+            row = await cur.fetchone()
+            if not row:
+                status_embed.add_field(name="Such empty...",
+                                       value="There have been no birthdays so far this year.",
+                                       inline=False)
+                pass
+            else:
+                recent_user, recent_day, recent_month = row
+                recent_user_object = guild.get_member(recent_user) or await guild.fetch_member(recent_user)
+                status_embed.add_field(name="Most recent birthday",
+                                       value=f"{recent_user_object.mention} on {recent_day} {self.months_list[recent_month-1]}",
+                                       inline=False)
+                pass
+        
+        async with db.execute("""
+                              SELECT user_id, day, month
+                              FROM birthdays
+                              WHERE (month > ?) OR (month = ? AND day >= ?)
+                              ORDER BY month ASC, day ASC
+                              LIMIT 1
+                              """, (today_month, today_month, today_day)
+        ) as cur:
+            row =  await cur.fetchone()
+            if not row:
+                status_embed.add_field(name="Such empty...",
+                                       value="There are no more birthdays this year.",
+                                       inline=False)
+                pass
+            else:
+                upcoming_user, upcoming_day, upcoming_month = row
+                upcoming_user_object = guild.get_member(upcoming_user) or await guild.fetch_member(upcoming_user)
+                status_embed.add_field(name="Closest upcoming birthday",
+                                       value=f"{upcoming_user_object.mention} on {upcoming_day} {self.months_list[upcoming_month-1]}",
+                                       inline=False)
+                pass
+        
+        async with db.execute("SELECT user_id from birthdays") as cur:
+            row = await cur.fetchall()
+            if not row:
+                status_embed.add_field(name="Such empty...",
+                                       value="There are no birthdays stored", 
+                                       inline=False)
+                pass
+            else:
+                db_size = len(row)
+                status_embed.add_field(name="Database Size",
+                                       value=f"There are {db_size} birthdays stored in the database",
+                                       inline=False)
+                pass
+        await interaction.followup.send(embed=status_embed)
 
 
 async def setup(bot: commands.Bot):
