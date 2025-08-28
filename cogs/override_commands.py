@@ -158,7 +158,7 @@ class override_commands(commands.Cog):
                 await interaction.edit_original_response(embed=entry_error_embed, view=None)
 
 
-    @override_group.command(name="remove", description="Remove a birthday entry")
+    @override_group.command(name="remove", description="Remove a birthday from the database")
     @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.has_any_role(professors, goblins)
     async def remove_birthday(
@@ -217,14 +217,14 @@ class override_commands(commands.Cog):
         await interaction.followup.send("Force wish cycle completed.")
     
 
-    @override_group.command(name="status", description="Recent/upcoming birthdays and database size")
+    @override_group.command(name="status", description="Displays the nearest past and upcoming (registered) birthdays and the size of the database")
     @app_commands.checks.has_any_role(professors, goblins)
     async def db_status(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         db = await init_db()
         guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         status_embed = discord.Embed(title="Database status information", 
-                                     description="Database size, and recent and upcoming birthdays.",
+                                     description="The nearest past and upcoming (registered) birthdays, and the size of the database.",
                                      colour=interaction.user.colour)
         today = datetime.now(timezone.utc)
         today_day, today_month = today.day, today.month

@@ -161,7 +161,7 @@ class birthday_commands(commands.Cog):
                 await interaction.edit_original_response(embed=entry_error_embed, view=None)
 
 
-    @birthday_group.command(name="remove", description="Remove your birthday entry")
+    @birthday_group.command(name="remove", description="Remove your birthday from the database")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     @app_commands.checks.has_any_role(professors, goblins, server_staff)
     async def remove_birthday(
@@ -209,7 +209,7 @@ class birthday_commands(commands.Cog):
             await interaction.edit_original_response(embed=removal_success_embed, view=None)
 
 
-    @birthday_group.command(name="show", description="Show a user's birthday information")
+    @birthday_group.command(name="show", description="Display a user's birthday information")
     @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     async def show_birthday(
@@ -245,7 +245,7 @@ class birthday_commands(commands.Cog):
         await interaction.response.defer()
         db = await init_db()
         guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
-        status_embed = discord.Embed(title="Nearest birthdays:", 
+        status_embed = discord.Embed(title="Nearest birthdays", 
                                      description="The nearest past and upcoming (registered) birthdays.",
                                      colour=interaction.user.colour)
         today = datetime.now(timezone.utc)

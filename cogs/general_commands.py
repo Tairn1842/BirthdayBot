@@ -53,11 +53,24 @@ class general_commands(commands.Cog):
         await interaction.followup.send(embed=ping_embed)
 
 
-    @app_commands.command(name="help", description="Get help with the bot's commands")
+    @app_commands.command(name="help", description="Get help with the bot's mechanisms")
     @app_commands.checks.has_any_role(professors, goblins, server_staff)
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     async def help_command(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
+        timezone_info = discord.Embed(
+            title="Timezone information",
+            description=
+            "The birthday bot will wish people by default at UTC time.\n"
+            "However, for some people, this may be on the day before their birthday or well into the afternoon on the day of their birthday.\n"
+            "Therefore, the bot gives you the option to set a timezone for your (or somebody else's) birthday.\n"
+            "This is done by entering their timezone in the IANA format.\n"
+            "This **usually** takes the from of Continent/CapitalCity, but it can vary for some countries.\n"
+            "If you're unsure about your IANA timezone code, you can check it out here: https://datetime.app/iana-timezones",
+            color=interaction.user.colour
+        )
+        timezone_info.set_footer(text="Page 2 of 3")
+
         command_list = discord.Embed(
             title="Help Menu", 
             description="A list of the bot's commands", 
@@ -77,26 +90,23 @@ class general_commands(commands.Cog):
                 value=cmd.description or "No description available", 
                 inline=False
                 )
-        command_list.set_footer(text="Page 2 of 2")
+        command_list.set_footer(text="Page 3 of 3")
         
         birthday_setting_info = discord.Embed(
             title="Registering Birthdays", 
             description=
             "The primary purpose of this bot is to register and hold a list of our members' birthdays.\n"
-            "The next page of this embed contains a list of commands for you to use to that end.\n"
-            "Most commands are currently accessible to all staff members."
-            "Override commands are restricted to Goblins and Professors.\n\n"
-            "Part of registering a birthday is setting a timezone.\n"
-            "The timezone field is optional and the value defaults to UTC.\n"
-            "But if the you (or another member) wishes to receive their wishes closer to **their** midnight, you'll need to set a timezone.\n"
-            "Timezones are set in the IANA timezone format. (usually, continent/capital_city)\n"
-            "You can find the IANA code at https://datetime.app/iana-timezones"
-, 
+            "On the day of someone's birthday, around midnight in the appointed timezone, the bot will send a wish.\n"
+            "Currently, the wishes will be sent to the Atrium channel, although this is due to change upon full release.\n"
+            "Regarding timezones, the next page of this embed will tell you why we allow you to set your own timezone, and how to do so.\n"
+            "The page after contains a list of the bot's commands.\n"
+            "Most commands are currently accessible to all staff members. They have a 15-second cooldown so don't spam.\n"
+            "Override commands are restricted to Goblins and Professors and exist primarily for testing, evaluation, and debugging.", 
             color=interaction.user.colour
         )
-        birthday_setting_info.set_footer(text="Page 1 of 2")
+        birthday_setting_info.set_footer(text="Page 1 of 3")
 
-        help_pages_list = [birthday_setting_info, command_list]
+        help_pages_list = [birthday_setting_info, timezone_info, command_list]
         view = help_pages(user= interaction.user, embeds=help_pages_list)
         await interaction.followup.send(embed=help_pages_list[0], view = view)
 

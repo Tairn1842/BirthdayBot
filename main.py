@@ -29,12 +29,12 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
     elif isinstance(error, app_commands.CommandOnCooldown):
         message = "This command is on cooldown! Try again later!"
     elif isinstance(error, app_commands.NoPrivateMessage):
-        message  = "You can't use this in DMs!"
+        message  = "You can't use this bot in DMs!"
     else:
         message = f"An unexpected error occured. Please alert the bot owner.\n{error}"
         guild = bot.get_guild(524552788932558848) or await bot.fetch_guild(524552788932558848)
         error_logging_channel = guild.get_channel(1068409137605656676) or await guild.fetch_channel(1068409137605656676)
-        await error_logging_channel.send(f"Error executing {interaction.command.name}:\n{error} by user {interaction.user.name}")
+        await error_logging_channel.send(f"Error executing {interaction.command.name}:\n{error}\nUser:{interaction.user.name}")
 
     if interaction.response.is_done():
         await interaction.followup.send(message, ephemeral=True)
