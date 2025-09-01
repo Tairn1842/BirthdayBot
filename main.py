@@ -28,6 +28,8 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
         message = "You can't execute this command."
     elif isinstance(error, app_commands.CommandOnCooldown):
         message = "This command is on cooldown! Try again later!"
+    elif isinstance(error, app_commands.CheckFailure):
+        message = "You do not have permission to use this command."
     elif isinstance(error, app_commands.NoPrivateMessage):
         message  = "You can't use this bot in DMs!"
     else:

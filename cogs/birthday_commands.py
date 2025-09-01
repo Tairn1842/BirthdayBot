@@ -25,6 +25,7 @@ class confirmation_check(discord.ui.View):
         self.stop()
 
 
+
 class birthday_commands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -55,12 +56,12 @@ class birthday_commands(commands.Cog):
         elif month in [1,3,5,7,8,10,12] and 1 <=  date <= 31:
                 return
         raise Exception("Invalid date format. Try again.")
-            
 
     birthday_group = app_commands.Group(name="birthday", description = "the birthday commands")
 
-
     @birthday_group.command(name="add", description="Add your birthday to the database")
+    @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
+    @app_commands.checks.has_any_role(professors, server_staff)
     @app_commands.describe(
         day="Their birthday day (1-31)",
         month="Their birthday month (1-12)",
@@ -68,9 +69,7 @@ class birthday_commands(commands.Cog):
     )
     @app_commands.autocomplete(timezone = timezone_autocomplete)
     @app_commands.autocomplete(month = month_autocomplete)
-    @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, goblins, server_staff)
-    async def birthday(
+    async def add_birthday(
         self,
         interaction: discord.Interaction,
         day: int,
@@ -163,7 +162,7 @@ class birthday_commands(commands.Cog):
 
     @birthday_group.command(name="remove", description="Remove your birthday from the database")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, goblins, server_staff)
+    @app_commands.checks.has_any_role(professors, server_staff)    
     async def remove_birthday(
         self,
         interaction: discord.Interaction
@@ -210,8 +209,9 @@ class birthday_commands(commands.Cog):
 
 
     @birthday_group.command(name="show", description="Display a user's birthday information")
-    @app_commands.describe(user="Select a user or provide their ID")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
+    @app_commands.checks.has_any_role(professors, server_staff)
+    @app_commands.describe(user="Select a user or provide their ID")
     async def show_birthday(
         self,
         interaction: discord.Interaction, 
@@ -222,7 +222,7 @@ class birthday_commands(commands.Cog):
         if user is None:
             user = interaction.user
         db = await init_db()
-        async with db.execute("SELECT month, day FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
+        async with db.execute("SELECT month, day, timezone FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
             row  = await cur.fetchone()
             if row is None:
                 entry_not_found_embed = discord.Embed(title="Such empty...",
@@ -230,9 +230,9 @@ class birthday_commands(commands.Cog):
                 colour=discord.Colour.red())
                 await interaction.followup.send(embed=entry_not_found_embed)
                 return
-            month_int, day = row
+            month_int, day, timezone = row
             show_embed = discord.Embed(title=f"{user.name}'s Birthday", 
-                description=f"{user.mention}'s birthday is on {day} {self.months_list[month_int-1]}.", 
+                description=f"{user.mention}'s birthday is on {day} {self.months_list[month_int-1]} at timezone {timezone}.", 
                 colour=user.colour)
             if user.id != interaction.user.id:
                 show_embed.set_footer(text="stop stalking other people smh")
@@ -241,7 +241,8 @@ class birthday_commands(commands.Cog):
 
     @birthday_group.command(name="show_nearest", description="Displays the nearest past and upcoming (registered) birthdays")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    async def db_status(self, interaction: discord.Interaction):
+    @app_commands.checks.has_any_role(professors, server_staff)
+    async def nearest_birthdays(self, interaction: discord.Interaction):
         await interaction.response.defer()
         db = await init_db()
         guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)

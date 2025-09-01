@@ -4,9 +4,9 @@ atrium = 825822128771301426
 guild_id = 524552788932558848
 
 professors = 731429277563748412
-goblins = 526069180831891467
-poltergeists = 1345448742022545510
 server_staff = 822057686119088149
+
+tairneanach = 876529458880847892
 
 magical_characters = ["Albus Dumbledore", "Minerva McGonagall", "Oliver Wood", "Percy Weasley", "Remus Lupin", 
                       "Sirius Black", "Molly Weasley", "Arthur Weasley", "Professor Sprout", "Newt Scamander", 

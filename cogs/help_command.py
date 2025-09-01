@@ -36,28 +36,28 @@ class help_pages(discord.ui.View):
             await interaction.response.send_message("You're already on the last page.", ephemeral=True)
 
 
-class general_commands(commands.Cog):
+class help_command(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="ping", description="Check the bot's latency")
-    @app_commands.checks.has_any_role(professors, goblins)
-    async def ping_command(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        latency = self.bot.latency * 1000
-        ping_embed = discord.Embed(
-            title="Pong!",
-            description=f"Latency: {latency: .2f} ms", 
-            color=interaction.user.colour
-        )
-        await interaction.followup.send(embed=ping_embed)
-
 
     @app_commands.command(name="help", description="Get help with the bot's mechanisms")
-    @app_commands.checks.has_any_role(professors, goblins, server_staff)
+    @app_commands.checks.has_any_role(professors, server_staff)
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     async def help_command(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
+        
+        birthday_setting_info = discord.Embed(
+            title="Registering Birthdays", 
+            description=
+            "The primary purpose of this bot is to register and hold a list of our members' birthdays.\n"
+            "On the day of someone's birthday, around midnight in the appointed timezone, the bot will send a wish.\n"
+            "Currently, the wishes will be sent to the Atrium channel, although this is due to change upon full release.\n"
+            "Regarding timezones, the next page of this embed will tell you why we allow you to set your own timezone, and how to do so.\n", 
+            color=interaction.user.colour
+        )
+        birthday_setting_info.set_footer(text="Page 1 of 4")
+
         timezone_info = discord.Embed(
             title="Timezone information",
             description=
@@ -69,7 +69,17 @@ class general_commands(commands.Cog):
             "If you're unsure about your IANA timezone code, you can check it out here: https://datetime.app/iana-timezones",
             color=interaction.user.colour
         )
-        timezone_info.set_footer(text="Page 2 of 3")
+        timezone_info.set_footer(text="Page 2 of 4")
+
+        group_info = discord.Embed(
+            title="Command Group Information",
+            description="You will notice that most commands have two words in their name; the first is the command group.\n"
+            "These groups are used to identify the purpose of and access to the commands in them.\n"
+            "The help command and those in the 'birthday' group are accessible to all staff members.\n"
+            "The override commands exist for use in special cases and are exclusive to the professors.\n"
+            "Lastly, the debug commands exist for testing, evaluation, and debugging, and are exclusive to the bot owner — Tairn.",
+            colour=interaction.user.colour)
+        group_info.set_footer(text="Page 3 of 4")
 
         command_list = discord.Embed(
             title="Help Menu", 
@@ -90,50 +100,12 @@ class general_commands(commands.Cog):
                 value=cmd.description or "No description available", 
                 inline=False
                 )
-        command_list.set_footer(text="Page 3 of 3")
-        
-        birthday_setting_info = discord.Embed(
-            title="Registering Birthdays", 
-            description=
-            "The primary purpose of this bot is to register and hold a list of our members' birthdays.\n"
-            "On the day of someone's birthday, around midnight in the appointed timezone, the bot will send a wish.\n"
-            "Currently, the wishes will be sent to the Atrium channel, although this is due to change upon full release.\n"
-            "Regarding timezones, the next page of this embed will tell you why we allow you to set your own timezone, and how to do so.\n"
-            "The page after contains a list of the bot's commands.\n"
-            "Most commands are currently accessible to all staff members. They have a 15-second cooldown so don't spam.\n"
-            "Override commands are restricted to Goblins and Professors and exist primarily for testing, evaluation, and debugging.", 
-            color=interaction.user.colour
-        )
-        birthday_setting_info.set_footer(text="Page 1 of 3")
+        command_list.set_footer(text="Page 4 of 4")
 
-        help_pages_list = [birthday_setting_info, timezone_info, command_list]
+        help_pages_list = [birthday_setting_info, timezone_info, group_info, command_list]
         view = help_pages(user= interaction.user, embeds=help_pages_list)
         await interaction.followup.send(embed=help_pages_list[0], view = view)
 
 
-    @commands.command()
-    @commands.has_any_role(goblins, professors)
-    async def sync(self, ctx: commands.Context):
-        start_time = time.time()
-        try:
-            synced = await self.bot.tree.sync()
-            end_time = time.time()
-            duration = end_time - start_time
-            await ctx.send(
-                f"Synced {len(synced)} commands globally in {duration:.2f} seconds."
-            )
-        except discord.HTTPException as e:
-            await ctx.send(f"Error while syncing: {str(e)}")
-    
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, commands.BotMissingAnyRole):
-            await ctx.send(
-                "You do not have permission to use this command."
-            )
-        else:
-            raise error
-
-
 async def setup(bot: commands.Bot):
-    await bot.add_cog(general_commands(bot))
+    await bot.add_cog(help_command(bot))
