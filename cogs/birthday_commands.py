@@ -115,6 +115,10 @@ class birthday_commands(commands.Cog):
         confirmation_embed = discord.Embed(title="Are you sure?",
             description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
             colour = interaction.user.colour)
+        if timezone == "UTC":
+            confirmation_embed.add_field(name="Get wished at UTC?",
+                value="You will be wished around midnight UTC on the day of your birthday.\n"
+                "If you would like to be wished at your local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
         await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
 

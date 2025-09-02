@@ -122,6 +122,9 @@ class override_commands(commands.Cog):
         confirmation_embed = discord.Embed(title="Are you sure?",
             description=f"You are attempting to add a birthday entry for {user.mention} with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
             colour = interaction.user.colour)
+        confirmation_embed.add_field(name="Wish at UTC?",
+                value="The user will be wished around midnight UTC on the day of their birthday.\n"
+                "If you would like for them to be wished at their local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
         await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
 
