@@ -118,7 +118,7 @@ class birthday_commands(commands.Cog):
         if timezone == "UTC":
             confirmation_embed.add_field(name="Get wished at UTC?",
                 value="You will be wished around midnight UTC on the day of your birthday.\n"
-                "If you would like to be wished at your local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
+                "If you would like to be wished in your local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
         await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
 
@@ -154,7 +154,7 @@ class birthday_commands(commands.Cog):
                     )
                 await db.commit()
                 add_success_embed  = discord.Embed(title="Oh look! It worked!",
-                    description=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.", 
+                    description=f"Added birthday for {user.mention} on {day} {month} in the {timezone} timezone.", 
                     colour=discord.Colour.green())
                 await interaction.edit_original_response(embed=add_success_embed, view=None)
             except Exception as e:
@@ -236,14 +236,14 @@ class birthday_commands(commands.Cog):
                 return
             month_int, day, timezone = row
             show_embed = discord.Embed(title=f"{user.name}'s Birthday", 
-                description=f"{user.mention}'s birthday is on {day} {self.months_list[month_int-1]} at timezone {timezone}.", 
+                description=f"{user.mention}'s birthday is on {day} {self.months_list[month_int-1]} in the {timezone} timezone.", 
                 colour=user.colour)
             if user.id != interaction.user.id:
                 show_embed.set_footer(text="stop stalking other people smh")
             await interaction.followup.send(embed=show_embed)
     
 
-    @birthday_group.command(name="show_nearest", description="Displays the nearest past and upcoming (registered) birthdays")
+    @birthday_group.command(name="show_nearest", description="Displays the nearest (registered) birthdays")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     @app_commands.checks.has_any_role(professors, server_staff)
     async def nearest_birthdays(self, interaction: discord.Interaction):
@@ -251,7 +251,7 @@ class birthday_commands(commands.Cog):
         db = await init_db()
         guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         status_embed = discord.Embed(title="Nearest birthdays", 
-                                     description="The nearest past and upcoming (registered) birthdays.",
+                                     description="The nearest (registered) birthdays:",
                                      colour=interaction.user.colour)
         today = datetime.now(timezone.utc)
         today_day, today_month = today.day, today.month
@@ -295,7 +295,7 @@ class birthday_commands(commands.Cog):
             else:
                 upcoming_user, upcoming_day, upcoming_month = row
                 upcoming_user_object = guild.get_member(upcoming_user) or await guild.fetch_member(upcoming_user)
-                status_embed.add_field(name="Closest upcoming birthday",
+                status_embed.add_field(name="Nearest upcoming birthday",
                                        value=f"{upcoming_user_object.mention} on {upcoming_day} {self.months_list[upcoming_month-1]}",
                                        inline=False)
                 pass
@@ -306,3 +306,7 @@ async def setup(bot: commands.Bot):
     await init_db()
     cog = birthday_commands(bot)
     await bot.add_cog(cog)
+    try:
+        bot.tree.add_command(cog.birthday_group)
+    except app_commands.CommandAlreadyRegistered:
+        pass

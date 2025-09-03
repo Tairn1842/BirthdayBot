@@ -47,6 +47,11 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} commands globally.")
+    except discord.HTTPException as e:
+        print(f"Error while syncing: {str(e)}")
 
 
 if __name__ == "__main__":

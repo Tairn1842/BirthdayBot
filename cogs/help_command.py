@@ -41,7 +41,7 @@ class help_command(commands.Cog):
         self.bot = bot
 
 
-    @app_commands.command(name="help", description="Get help with the bot's mechanisms")
+    @app_commands.command(name="help", description="How does the bot work?")
     @app_commands.checks.has_any_role(professors, server_staff)
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     async def help_command(self, interaction: discord.Interaction):
@@ -50,10 +50,10 @@ class help_command(commands.Cog):
         birthday_setting_info = discord.Embed(
             title="Registering Birthdays", 
             description=
-            "The primary purpose of this bot is to register and hold a list of our members' birthdays.\n"
-            "On the day of someone's birthday, around midnight in the appointed timezone, the bot will send a wish.\n"
-            "Currently, the wishes will be sent to the Atrium channel, although this is due to change upon full release.\n"
-            "Regarding timezones, the next page of this embed will tell you why we allow you to set your own timezone, and how to do so.\n", 
+            "- The primary purpose of this bot is to register and hold a list of our members' birthdays.\n"
+            "- On the day of someone's birthday, at around midnight in the appointed timezone, the bot will send a wish.\n"
+            "- Currently, the wishes will be sent to the Atrium channel, although this is due to change upon full release.\n"
+            "- The next page of this embed will tell you why we allow you to set your own timezone, and how to do so.\n", 
             color=interaction.user.colour
         )
         birthday_setting_info.set_footer(text="Page 1 of 4")
@@ -61,29 +61,29 @@ class help_command(commands.Cog):
         timezone_info = discord.Embed(
             title="Timezone information",
             description=
-            "The birthday bot will wish people by default at UTC time.\n"
-            "However, for some people, this may be on the day before their birthday or well into the afternoon on the day of their birthday.\n"
-            "Therefore, the bot gives you the option to set a timezone for your (or somebody else's) birthday.\n"
-            "This is done by entering their timezone in the IANA format.\n"
-            "This **usually** takes the from of Continent/CapitalCity, but it can vary for some countries.\n"
-            "If you're unsure about your IANA timezone code, you can check it out here: https://datetime.app/iana-timezones",
+            "- The birthday bot will wish people by default at around midnight UTC time.\n"
+            "- However, for some people, this may be on the day before their birthday or well into the afternoon on the day of their birthday.\n"
+            "- Therefore, the bot gives you the option to set a timezone for your (or somebody else's) birthday.\n"
+            "- This is done by entering their timezone in the IANA format.\n"
+            "- This **usually** takes the from of Continent/CapitalCity, but it can vary.\n"
+            "- If you're unsure about your IANA timezone code, you can check it out here: https://datetime.app/iana-timezones",
             color=interaction.user.colour
         )
         timezone_info.set_footer(text="Page 2 of 4")
 
         group_info = discord.Embed(
             title="Command Group Information",
-            description="You will notice that most commands have two words in their name; the first is the command group.\n"
-            "These groups are used to identify the purpose of and access to the commands in them.\n"
-            "The help command and those in the 'birthday' group are accessible to all staff members.\n"
-            "The override commands exist for use in special cases and are exclusive to the professors.\n"
-            "Lastly, the debug commands exist for testing, evaluation, and debugging, and are exclusive to the bot owner — Tairn.",
+            description="- Most commands have two words in their name; the first is the command group.\n"
+            "- These groups are used to identify the purpose of and access to the commands in them.\n"
+            "- The help command and those in the 'birthday' group are accessible to all staff members.\n"
+            "- The override commands exist for use in special cases and are exclusively available to the professors.\n"
+            "- The debug commands exist for testing, evaluation, and debugging, and are exclusively available to the bot owner — Tairn.",
             colour=interaction.user.colour)
         group_info.set_footer(text="Page 3 of 4")
 
         command_list = discord.Embed(
-            title="Help Menu", 
-            description="A list of the bot's commands", 
+            title="Command List", 
+            description="The list of the bot's commands:", 
             color=interaction.user.colour
         )
         for cmd in self.bot.tree.get_commands():
@@ -108,4 +108,5 @@ class help_command(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(help_command(bot))
+    cog = help_command(bot)
+    await bot.add_cog(cog)

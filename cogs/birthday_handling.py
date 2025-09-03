@@ -134,6 +134,14 @@ async def mark_sent(user_ids: list[int]) -> None:
     await db.commit()
 
 
+async def checkpoint_wal():
+    global db
+    if db is None:
+        db = await init_db()
+    await db.execute("PRAGMA wal_checkpoint(FULL);")
+    await db.commit()
+
+
 class birthday_handling(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot  = bot
@@ -174,6 +182,7 @@ class birthday_handling(commands.Cog):
                 to_wish = await birthday_parser(bot)
                 if to_wish:
                     await self.wish_sender(to_wish)
+                await checkpoint_wal()
             except Exception:
                 pass
             await asyncio.sleep(900)

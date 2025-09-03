@@ -57,14 +57,14 @@ class debug_commands(commands.Cog):
         await interaction.followup.send("Force wish cycle completed.")
     
 
-    @debug_group.command(name="status", description="Displays the nearest past and upcoming (registered) birthdays and the size of the database")
+    @debug_group.command(name="status", description="Displays the nearest (registered) birthdays and the size of the database")
     @owner_check()
     async def db_status(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         db = await init_db()
         guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         status_embed = discord.Embed(title="Database status information", 
-                                     description="The nearest past and upcoming (registered) birthdays, and the size of the database.",
+                                     description="The nearest (registered) birthdays and the size of the database:",
                                      colour=interaction.user.colour)
         today = datetime.now(timezone.utc)
         today_day, today_month = today.day, today.month
@@ -146,3 +146,7 @@ async def setup(bot: commands.Bot):
     await init_db()
     cog = debug_commands(bot)
     await bot.add_cog(cog)
+    try:
+        bot.tree.add_command(cog.debug_group)
+    except app_commands.CommandAlreadyRegistered:
+        pass

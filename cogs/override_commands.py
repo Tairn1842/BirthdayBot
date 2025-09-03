@@ -124,7 +124,7 @@ class override_commands(commands.Cog):
             colour = interaction.user.colour)
         confirmation_embed.add_field(name="Wish at UTC?",
                 value="The user will be wished around midnight UTC on the day of their birthday.\n"
-                "If you would like for them to be wished at their local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
+                "If you would like for them to be wished in their local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
         await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
 
@@ -160,7 +160,7 @@ class override_commands(commands.Cog):
                     )
                 await db.commit()
                 add_success_embed  = discord.Embed(title="Oh look! It worked!",
-                    description=f"Added birthday for {user.mention} on {day} {month} in timezone {timezone}.", 
+                    description=f"Added birthday for {user.mention} on {day} {month} in the {timezone} timezone.", 
                     colour=discord.Colour.green())
                 await interaction.edit_original_response(embed=add_success_embed, view=None)
             except Exception as e:
@@ -222,3 +222,7 @@ async def setup(bot: commands.Bot):
     await init_db()
     cog = override_commands(bot)
     await bot.add_cog(cog)
+    try:
+        bot.tree.add_command(cog.override_group)
+    except app_commands.CommandAlreadyRegistered:
+        pass
