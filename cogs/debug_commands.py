@@ -94,7 +94,7 @@ class debug_commands(commands.Cog):
         async with db.execute("""
                               SELECT user_id, day, month
                               FROM birthdays
-                              WHERE (month > ?) OR (month = ? AND day >= ?)
+                              WHERE (month > ?) OR (month = ? AND day > ?)
                               ORDER BY month ASC, day ASC
                               LIMIT 1
                               """, (today_month, today_month, today_day)

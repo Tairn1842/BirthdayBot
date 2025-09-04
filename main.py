@@ -18,6 +18,14 @@ class BirthdayBot(commands.Bot):
                 await self.load_extension(f"cogs.{filename[:-3]}")
                 print(f"Loaded cog: {filename}")
 
+    async def on_message(self, message: discord.Message):
+        if isinstance(message.channel, discord.DMChannel):
+            if not message.author.bot:
+                await message.reply("You can't use the bot here.", delete_after=5)
+                pass
+        else:
+            await bot.process_commands(message)
+
 
 bot = BirthdayBot()
 
@@ -27,7 +35,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
     if isinstance(error, app_commands.MissingAnyRole):
         message = "You can't execute this command."
     elif isinstance(error, app_commands.CommandOnCooldown):
-        message = "This command is on cooldown! Try again later!"
+        message = f"This command is on cooldown! Try again after {error.retry_after} seconds."
     elif isinstance(error, app_commands.CheckFailure):
         message = "You do not have permission to use this command."
     elif isinstance(error, app_commands.NoPrivateMessage):
@@ -48,6 +56,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 async def on_ready():
     print(f"Logged in as {bot.user}!")
     try:
+        bot.tree.allowed_contexts = app_commands.AppCommandContext(guild=True, private_channel=False, dm_channel=False)
         synced = await bot.tree.sync()
         print(f"Synced {len(synced)} commands globally.")
     except discord.HTTPException as e:

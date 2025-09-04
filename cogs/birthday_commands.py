@@ -8,7 +8,7 @@ from .variables import *
 
 class confirmation_check(discord.ui.View):
     def __init__ (self):
-        super().__init__(timeout=15)
+        super().__init__(timeout=45)
         self.check_message = 0
     
     async def on_timeout(self):
@@ -17,11 +17,13 @@ class confirmation_check(discord.ui.View):
     
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, custom_id="confirm")
     async def on_confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         self.check_message = 1
         self.stop()
     
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, custom_id="reject")
     async def on_cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         self.stop()
 
 
@@ -115,10 +117,6 @@ class birthday_commands(commands.Cog):
         confirmation_embed = discord.Embed(title="Are you sure?",
             description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
             colour = interaction.user.colour)
-        if timezone == "UTC":
-            confirmation_embed.add_field(name="Get wished at UTC?",
-                value="You will be wished around midnight UTC on the day of your birthday.\n"
-                "If you would like to be wished in your local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.")
         await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
 
@@ -137,6 +135,35 @@ class birthday_commands(commands.Cog):
             return
 
         if view.check_message == 1:
+
+            if timezone.lower() in "utc":
+
+                timezone_confirmation_embed=discord.Embed(title="Get wished at midnight UTC?",
+                    description="You will be wished at around midnight UTC on the day of your birthday.\n"
+                    "If you would like to be wished in your local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.\n"
+                    "If you would like to proceed with UTC, press confirm.",
+                    colour=interaction.user.colour)
+                view = confirmation_check()
+                await interaction.edit_original_response(embed=timezone_confirmation_embed, view=view)
+                await view.wait()
+
+                if view.check_message == 2:
+                    timed_out_embed = discord.Embed(title="Too slow!",
+                        description="Interaction timed out. Please try again.", 
+                        colour=discord.Colour.red())
+                    await interaction.edit_original_response(embed=timed_out_embed, view=None)
+                    return
+
+                if view.check_message == 0:
+                    cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
+                        description="Entry addition cancelled", 
+                        colour=discord.Colour.red())
+                    await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
+                    return
+
+                if view.check_message == 1:
+                    pass
+
             db = await init_db()
             async with db.execute("SELECT 1 FROM birthdays WHERE user_id = ?", (user.id,)) as cur:
                 row = await cur.fetchone()
@@ -281,7 +308,7 @@ class birthday_commands(commands.Cog):
         async with db.execute("""
                               SELECT user_id, day, month
                               FROM birthdays
-                              WHERE (month > ?) OR (month = ? AND day >= ?)
+                              WHERE (month > ?) OR (month = ? AND day > ?)
                               ORDER BY month ASC, day ASC
                               LIMIT 1
                               """, (today_month, today_month, today_day)
