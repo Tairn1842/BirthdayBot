@@ -2,6 +2,7 @@ import discord, os
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
+import datetime as dt
 
 
 load_dotenv()
@@ -35,7 +36,8 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
     if isinstance(error, app_commands.MissingAnyRole):
         message = "You can't execute this command."
     elif isinstance(error, app_commands.CommandOnCooldown):
-        message = f"This command is on cooldown! Try again after {error.retry_after} seconds."
+        now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
+        message = f"This command is on cooldown! Try again <t:{int(now_ts+error.retry_after)}:R>."
     elif isinstance(error, app_commands.CheckFailure):
         message = "You do not have permission to use this command."
     elif isinstance(error, app_commands.NoPrivateMessage):

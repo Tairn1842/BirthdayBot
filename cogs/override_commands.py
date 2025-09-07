@@ -1,4 +1,5 @@
 import discord
+import datetime as dt
 from discord import app_commands
 from discord.ext import commands
 from zoneinfo import ZoneInfo, available_timezones
@@ -8,7 +9,7 @@ from .variables import *
 
 class confirmation_check(discord.ui.View):
     def __init__ (self):
-        super().__init__(timeout=15)
+        super().__init__(timeout=45)
         self.check_message = 0
     
     async def on_timeout(self):
@@ -121,8 +122,10 @@ class override_commands(commands.Cog):
             return
 
         view = confirmation_check()
+        now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
         confirmation_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to add a birthday entry for {user.mention} with date: {day}, month: {month}, and timezone: {timezone}. Proceed?", 
+            description=f"You are attempting to add a birthday entry for {user.mention} with date: {day}, month: {month}, and timezone: {timezone}. Proceed?\n"
+            f"-# This interaction will time out <t:{int(now_ts+45)}:R>", 
             colour = interaction.user.colour)
         await interaction.followup.send(embed=confirmation_embed, view=view)
         await view.wait()
@@ -145,10 +148,12 @@ class override_commands(commands.Cog):
 
             if timezone in "UTC":
 
+                now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
                 timezone_confirmation_embed=discord.Embed(title="Wish at midnight UTC?",
                     description="The user will be wished at around midnight UTC on the day of their birthday.\n"
                     "If you would like for them to be wished in their local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.\n"
-                    "If you would like to proceed with UTC, press confirm.",
+                    "If you would like to proceed with UTC, press confirm.\n"
+                    f"-# This interaction will time out <t:{int(now_ts+45)}:R>",
                     colour=interaction.user.colour)
                 view = confirmation_check()
                 await interaction.edit_original_response(embed=timezone_confirmation_embed, view=view)
@@ -208,8 +213,10 @@ class override_commands(commands.Cog):
     ):
         await interaction.response.defer(ephemeral=True)
         view = confirmation_check()
+        now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
         check_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to delete the birthday entry for {user.mention}. Proceed?", 
+            description=f"You are attempting to delete the birthday entry for {user.mention}. Proceed?\n"
+            f"-# This interaction will time out <t:{int(now_ts+45)}:R>", 
             colour=interaction.user.colour)
         await interaction.followup.send(embed=check_embed, view=view)
         await view.wait()
