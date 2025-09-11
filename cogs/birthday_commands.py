@@ -10,21 +10,22 @@ from .variables import *
 class confirmation_check(discord.ui.View):
     def __init__ (self):
         super().__init__(timeout=45)
-        self.check_message = 0
+        self.check_message = 2
     
     async def on_timeout(self):
         self.check_message = 2
         self.stop()
     
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, custom_id="confirm")
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, custom_id="confirm", emoji=approve_tick_emoji)
     async def on_confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         self.check_message = 1
         self.stop()
     
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, custom_id="reject")
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, custom_id="reject", emoji=alert_emoji)
     async def on_cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
+        self.check_message == 0
         self.stop()
 
 
@@ -58,7 +59,7 @@ class birthday_commands(commands.Cog):
                 return
         elif month in [1,3,5,7,8,10,12] and 1 <=  date <= 31:
                 return
-        raise Exception("Invalid date format. Try again.")
+        raise Exception(f"{alert_emoji} Invalid date format. Try again.")
 
     birthday_group = app_commands.Group(name="birthday", description = "the birthday commands")
 
@@ -83,7 +84,7 @@ class birthday_commands(commands.Cog):
         try:
             ZoneInfo(timezone)
         except Exception:
-            invalid_timezone_embed = discord.Embed(title="That's not a timezone...", 
+            invalid_timezone_embed = discord.Embed(title=f"{alert_emoji} That's not a timezone...", 
                 description="Invalid timezone. Please select one from the autocomplete list.\n"
                 "You can find the IANA code at https://datetime.app/iana-timezones",
                 colour=discord.Colour.red())
@@ -96,10 +97,10 @@ class birthday_commands(commands.Cog):
                     month_int = i+1
                     break
             else:
-                raise Exception("Month not found, enter the month properly.")
+                raise Exception(f"{alert_emoji} Month not found, enter the month properly.")
         except Exception as e:
             month_list_error=discord.Embed(title="Well, that didn't work.",
-                description = f"{e}", 
+                description = f"{alert_emoji} {e}", 
                 colour=discord.Colour.red())
             await interaction.followup.send(embed=month_list_error)
             return
@@ -108,7 +109,7 @@ class birthday_commands(commands.Cog):
             await self.month_checker(date=day, month=month_int)
         except Exception as e:
             month_check_error=discord.Embed(title="Well, that didn't work.", 
-                            description = f"{e}", 
+                            description = f"{alert_emoji} {e}", 
                             colour=discord.Colour.red())
             await interaction.followup.send(embed=month_check_error)
             return
@@ -116,7 +117,7 @@ class birthday_commands(commands.Cog):
         user = interaction.user
         view  = confirmation_check()
         now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
-        confirmation_embed = discord.Embed(title="Are you sure?",
+        confirmation_embed = discord.Embed(title=f"{alert_emoji} Are you sure?",
             description=f"You are attempting to add a birthday entry for yourself with date: {day}, month: {month}, and timezone: {timezone}. Proceed?\n"
             f"-# This interaction will time out <t:{int(now_ts+45)}:R>", 
             colour = interaction.user.colour)
@@ -125,14 +126,14 @@ class birthday_commands(commands.Cog):
 
         if view.check_message == 2:
             timed_out_embed = discord.Embed(title="Too slow!",
-                description="Interaction timed out. Please try again.", 
+                description=f"{alert_emoji} Interaction timed out. Please try again.", 
                 colour=discord.Colour.red())
             await interaction.edit_original_response(embed=timed_out_embed, view=None)
             return
 
         if view.check_message == 0:
             cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
-                description="Entry addition cancelled", 
+                description=f"{alert_emoji} Entry addition cancelled", 
                 colour=discord.Colour.red())
             await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
             return
@@ -143,7 +144,7 @@ class birthday_commands(commands.Cog):
                 
                 now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
                 timezone_confirmation_embed=discord.Embed(title="Get wished at midnight UTC?",
-                    description="You will be wished at around midnight UTC on the day of your birthday.\n"
+                    description=f"{alert_emoji} You will be wished at around midnight UTC on the day of your birthday.\n"
                     "If you would like to be wished in your local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.\n"
                     "If you would like to proceed with UTC, press confirm.\n"
                     f"-# This interaction will time out <t:{int(now_ts+45)}:R>",
@@ -154,14 +155,14 @@ class birthday_commands(commands.Cog):
 
                 if view.check_message == 2:
                     timed_out_embed = discord.Embed(title="Too slow!",
-                        description="Interaction timed out. Please try again.", 
+                        description=f"{alert_emoji} Interaction timed out. Please try again.", 
                         colour=discord.Colour.red())
                     await interaction.edit_original_response(embed=timed_out_embed, view=None)
                     return
 
                 if view.check_message == 0:
                     cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
-                        description="Entry addition cancelled", 
+                        description=f"{alert_emoji} Entry addition cancelled", 
                         colour=discord.Colour.red())
                     await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
                     return
@@ -174,7 +175,7 @@ class birthday_commands(commands.Cog):
                 row = await cur.fetchone()
             if row:
                 existing_birthday_embed = discord.Embed(title="There's something in the way...",
-                    description=f"{user.mention} already has a birthday entry. Use /birthday show to view.", 
+                    description=f"{alert_emoji} {user.mention} already has a birthday entry. Use /birthday show to view.", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=existing_birthday_embed, view=None)
                 return
@@ -186,12 +187,12 @@ class birthday_commands(commands.Cog):
                     )
                 await db.commit()
                 add_success_embed  = discord.Embed(title="Oh look! It worked!",
-                    description=f"Added birthday for {user.mention} on {day} {month} in the {timezone} timezone.", 
+                    description=f"{approve_tick_emoji} Added birthday for {user.mention} on {day} {month} in the {timezone} timezone.", 
                     colour=discord.Colour.green())
                 await interaction.edit_original_response(embed=add_success_embed, view=None)
             except Exception as e:
                 entry_error_embed=discord.Embed(title="Well, that didn't work.",
-                    description=f"Error entering data, please check for mistakes and try again.\n{e}", 
+                    description=f"{alert_emoji} Error entering data, please check for mistakes and try again.\n{e}", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=entry_error_embed, view=None)
 
@@ -207,7 +208,7 @@ class birthday_commands(commands.Cog):
         view = confirmation_check()
         now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
         check_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to delete the birthday entry for yourself. Proceed?\n"
+            description=f"{alert_emoji} You are attempting to delete the birthday entry for yourself. Proceed?\n"
             f"-# This interaction will time out <t:{int(now_ts+45)}:R>", 
             colour=interaction.user.colour)
         await interaction.followup.send(embed=check_embed, view=view)
@@ -215,14 +216,14 @@ class birthday_commands(commands.Cog):
 
         if view.check_message == 2:
             timeout_embed = discord.Embed(title="Too slow!",
-            description="Interaction timed out!", 
+            description=f"{alert_emoji} Interaction timed out!", 
             colour=discord.Colour.red())
             await interaction.edit_original_response(embed=timeout_embed, view=None)
             return
 
         if view.check_message == 0:
             cancel_embed = discord.Embed(title="Someone's Indecisive!",
-            description="Entry deletion cancelled.", 
+            description=f"{alert_emoji} Entry deletion cancelled.", 
             colour=discord.Colour.red())
             await interaction.edit_original_response(embed=cancel_embed, view=None)
             return
@@ -234,14 +235,14 @@ class birthday_commands(commands.Cog):
                 row = await cur.fetchone()
             if not row:
                 no_birthday_embed = discord.Embed(title="Such empty...",
-                    description=f"{user.mention} doesn't have a birthday entry.", 
+                    description=f"{alert_emoji} {user.mention} doesn't have a birthday entry.", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=no_birthday_embed, view=None)
                 return
             await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
             await db.commit()
             removal_success_embed = discord.Embed(title="Oh look! It worked!",
-                description=f"Removed birthday entry for {user.mention}.", 
+                description=f"{approve_tick_emoji} Removed birthday entry for {user.mention}.", 
                 colour=discord.Colour.green())
             await interaction.edit_original_response(embed=removal_success_embed, view=None)
 
@@ -264,7 +265,7 @@ class birthday_commands(commands.Cog):
             row  = await cur.fetchone()
             if row is None:
                 entry_not_found_embed = discord.Embed(title="Such empty...",
-                description=f"{user.mention} does not have a birthday entry.", 
+                description=f"{alert_emoji} {user.mention} does not have a birthday entry.", 
                 colour=discord.Colour.red())
                 await interaction.followup.send(embed=entry_not_found_embed)
                 return
@@ -301,7 +302,7 @@ class birthday_commands(commands.Cog):
             row = await cur.fetchone()
             if not row:
                 status_embed.add_field(name="Such empty...",
-                                       value="There have been no birthdays so far this year.",
+                                       value=f"{alert_emoji} There have been no birthdays so far this year.",
                                        inline=False)
                 pass
             else:
@@ -323,7 +324,7 @@ class birthday_commands(commands.Cog):
             row =  await cur.fetchone()
             if not row:
                 status_embed.add_field(name="Such empty...",
-                                       value="There are no more birthdays this year.",
+                                       value=f"{alert_emoji} There are no more birthdays this year.",
                                        inline=False)
                 pass
             else:

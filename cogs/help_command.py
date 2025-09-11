@@ -15,25 +15,25 @@ class help_pages(discord.ui.View):
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user.id:
             return await interaction.response.send_message(
-                "This is not your help menu", ephemeral=True
+                f"{alert_emoji} This is not your help menu", ephemeral=True
             )
         if self.current_page > 0:
             self.current_page -= 1
             await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
         else:
-            await interaction.response.send_message("You're already on the first page.", ephemeral=True)
+            await interaction.response.send_message(f"{alert_emoji} You're already on the first page.", ephemeral=True)
 
     @discord.ui.button(label="next", style=discord.ButtonStyle.primary)
     async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user.id:
             return await interaction.response.send_message(
-                "This is not your help menu", ephemeral=True
+                f"{alert_emoji} This is not your help menu", ephemeral=True
             )
         if self.current_page < len(self.embeds) - 1:
             self.current_page += 1
             await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
         else:
-            await interaction.response.send_message("You're already on the last page.", ephemeral=True)
+            await interaction.response.send_message(f"{alert_emoji} You're already on the last page.", ephemeral=True)
 
 
 class help_command(commands.Cog):

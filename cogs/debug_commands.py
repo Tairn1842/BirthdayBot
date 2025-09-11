@@ -31,16 +31,16 @@ class debug_commands(commands.Cog):
             end_time = time.time()
             duration = end_time - start_time
             await ctx.send(
-                f"Synced {len(synced)} commands globally in {duration:.2f} seconds."
+                f"{approve_tick_emoji} Synced {len(synced)} commands globally in {duration:.2f} seconds."
             )
         except discord.HTTPException as e:
-            await ctx.send(f"Error while syncing: {str(e)}")
+            await ctx.send(f"{alert_emoji} Error while syncing: {str(e)}")
     
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.NotOwner):
             await ctx.send(
-                "You do not have permission to use this command."
+                f"{alert_emoji} You do not have permission to use this command."
             )
         else:
             raise error
@@ -54,7 +54,7 @@ class debug_commands(commands.Cog):
         to_wish = await birthday_parser(self.bot)
         if to_wish:
             await handling_cog.wish_sender(to_wish)
-        await interaction.followup.send("Force wish cycle completed.")
+        await interaction.followup.send(f"{approve_tick_emoji} Force wish cycle completed.")
     
 
     @debug_group.command(name="status", description="Displays the nearest (registered) birthdays and the size of the database")
@@ -80,7 +80,7 @@ class debug_commands(commands.Cog):
             row = await cur.fetchone()
             if not row:
                 status_embed.add_field(name="Such empty...",
-                                       value="There have been no birthdays so far this year.",
+                                       value=f"{alert_emoji} There have been no birthdays so far this year.",
                                        inline=False)
                 pass
             else:
@@ -102,7 +102,7 @@ class debug_commands(commands.Cog):
             row =  await cur.fetchone()
             if not row:
                 status_embed.add_field(name="Such empty...",
-                                       value="There are no more birthdays this year.",
+                                       value=f"{alert_emoji} There are no more birthdays this year.",
                                        inline=False)
                 pass
             else:
@@ -117,7 +117,7 @@ class debug_commands(commands.Cog):
             row = await cur.fetchall()
             if not row:
                 status_embed.add_field(name="Such empty...",
-                                       value="There are no birthdays stored", 
+                                       value=f"{alert_emoji} There are no birthdays stored", 
                                        inline=False)
                 pass
             else:

@@ -173,16 +173,16 @@ class birthday_handling(commands.Cog):
         except Exception as e:
             guild = self.bot.get_guild(guild_id)
             error_channel = guild.get_channel(bot_testing)
-            await error_channel.send(f"Wishing Error: \n{e}")
+            await error_channel.send(f"{alert_emoji} Wishing Error: \n{e}")
 
 
     async def wish_checker(self, bot: commands.Bot):
         while True:
+            await checkpoint_wal()
             try:
                 to_wish = await birthday_parser(bot)
                 if to_wish:
                     await self.wish_sender(to_wish)
-                await checkpoint_wal()
             except Exception:
                 pass
             await asyncio.sleep(900)

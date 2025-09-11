@@ -10,21 +10,22 @@ from .variables import *
 class confirmation_check(discord.ui.View):
     def __init__ (self):
         super().__init__(timeout=45)
-        self.check_message = 0
+        self.check_message = 2
     
     async def on_timeout(self):
         self.check_message = 2
         self.stop()
     
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, custom_id="confirm")
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, custom_id="confirm", emoji=approve_tick_emoji)
     async def on_confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
         self.check_message = 1
         self.stop()
     
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, custom_id="reject")
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, custom_id="reject", emoji=alert_emoji)
     async def on_cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
+        self.check_message = 0
         self.stop()
 
 
@@ -65,7 +66,7 @@ class override_commands(commands.Cog):
                 return
         elif month in [1,3,5,7,8,10,12] and 1 <=  date <= 31:
                 return
-        raise Exception("Invalid date format. Try again.")
+        raise Exception(f"{alert_emoji} Invalid date format. Try again.")
 
     override_group = app_commands.Group(name="override", description= "admin override commands")
 
@@ -92,7 +93,7 @@ class override_commands(commands.Cog):
             ZoneInfo(timezone)
         except Exception:
             invalid_timezone_embed = discord.Embed(title="That's not a timezone...", 
-                description="Invalid timezone. Please select one from the autocomplete list.\n"
+                description=f"{alert_emoji} Invalid timezone. Please select one from the autocomplete list.\n"
                 "You can find the IANA code at https://datetime.app/iana-timezones",
                 colour=discord.Colour.red())
             await interaction.followup.send(embed=invalid_timezone_embed)
@@ -104,10 +105,10 @@ class override_commands(commands.Cog):
                     month_int = i+1
                     break
             else:
-                raise Exception("Month not found, enter the month properly.")
+                raise Exception(f"{alert_emoji} Month not found, enter the month properly.")
         except Exception as e:
             month_list_error=discord.Embed(title="Well, that didn't work.",
-                description = f"{e}", 
+                description = f"{alert_emoji} {e}", 
                 colour=discord.Colour.red())
             await interaction.followup.send(embed=month_list_error)
             return
@@ -116,7 +117,7 @@ class override_commands(commands.Cog):
             await self.month_checker(date=day, month=month_int)
         except Exception as e:
             month_check_error=discord.Embed(title="Well, that didn't work.", 
-                            description = f"{e}", 
+                            description = f"{alert_emoji} {e}", 
                             colour=discord.Colour.red())
             await interaction.followup.send(embed=month_check_error)
             return
@@ -124,7 +125,7 @@ class override_commands(commands.Cog):
         view = confirmation_check()
         now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
         confirmation_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to add a birthday entry for {user.mention} with date: {day}, month: {month}, and timezone: {timezone}. Proceed?\n"
+            description=f"{alert_emoji} You are attempting to add a birthday entry for {user.mention} with date: {day}, month: {month}, and timezone: {timezone}. Proceed?\n"
             f"-# This interaction will time out <t:{int(now_ts+45)}:R>", 
             colour = interaction.user.colour)
         await interaction.followup.send(embed=confirmation_embed, view=view)
@@ -132,14 +133,14 @@ class override_commands(commands.Cog):
 
         if view.check_message == 2:
             timed_out_embed = discord.Embed(title="Too slow!",
-                description="Interaction timed out. Please try again.", 
+                description=f"{alert_emoji} Interaction timed out. Please try again.", 
                 colour=discord.Colour.red())
             await interaction.edit_original_response(embed=timed_out_embed, view=None)
             return
 
         if view.check_message == 0:
             cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
-                description="Entry addition cancelled", 
+                description=f"{alert_emoji} Entry addition cancelled", 
                 colour=discord.Colour.red())
             await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
             return
@@ -150,7 +151,7 @@ class override_commands(commands.Cog):
 
                 now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
                 timezone_confirmation_embed=discord.Embed(title="Wish at midnight UTC?",
-                    description="The user will be wished at around midnight UTC on the day of their birthday.\n"
+                    description=f"{alert_emoji} The user will be wished at around midnight UTC on the day of their birthday.\n"
                     "If you would like for them to be wished in their local timezone, find its IANA code at https://datetime.app/iana-timezones and enter it in the command's 'timezone' field.\n"
                     "If you would like to proceed with UTC, press confirm.\n"
                     f"-# This interaction will time out <t:{int(now_ts+45)}:R>",
@@ -161,14 +162,14 @@ class override_commands(commands.Cog):
 
                 if view.check_message == 2:
                     timed_out_embed = discord.Embed(title="Too slow!",
-                        description="Interaction timed out. Please try again.", 
+                        description=f"{alert_emoji} Interaction timed out. Please try again.", 
                         colour=discord.Colour.red())
                     await interaction.edit_original_response(embed=timed_out_embed, view=None)
                     return
 
                 if view.check_message == 0:
                     cancelled_addition_embed = discord.Embed(title="Someone's indecisive!",
-                        description="Entry addition cancelled", 
+                        description=f"{alert_emoji} Entry addition cancelled", 
                         colour=discord.Colour.red())
                     await interaction.edit_original_response(embed=cancelled_addition_embed, view=None)
                     return
@@ -181,7 +182,7 @@ class override_commands(commands.Cog):
                 row = await cur.fetchone()
             if row:
                 existing_birthday_embed = discord.Embed(title="There's something in the way...",
-                    description=f"{user.mention} already has a birthday entry. Use /birthday show to view.", 
+                    description=f"{alert_emoji} {user.mention} already has a birthday entry. Use /birthday show to view.", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=existing_birthday_embed, view=None)
                 return
@@ -193,12 +194,12 @@ class override_commands(commands.Cog):
                     )
                 await db.commit()
                 add_success_embed  = discord.Embed(title="Oh look! It worked!",
-                    description=f"Added birthday for {user.mention} on {day} {month} in the {timezone} timezone.", 
+                    description=f"{approve_tick_emoji} Added birthday for {user.mention} on {day} {month} in the {timezone} timezone.", 
                     colour=discord.Colour.green())
                 await interaction.edit_original_response(embed=add_success_embed, view=None)
             except Exception as e:
                 entry_error_embed=discord.Embed(title="Well, that didn't work.",
-                    description=f"Error entering data, please check for mistakes and try again.\n{e}", 
+                    description=f"{alert_emoji} Error entering data, please check for mistakes and try again.\n{e}", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=entry_error_embed, view=None)
 
@@ -215,7 +216,7 @@ class override_commands(commands.Cog):
         view = confirmation_check()
         now_ts  = dt.datetime.now(dt.timezone.utc).timestamp()
         check_embed = discord.Embed(title="Are you sure?",
-            description=f"You are attempting to delete the birthday entry for {user.mention}. Proceed?\n"
+            description=f"{alert_emoji} You are attempting to delete the birthday entry for {user.mention}. Proceed?\n"
             f"-# This interaction will time out <t:{int(now_ts+45)}:R>", 
             colour=interaction.user.colour)
         await interaction.followup.send(embed=check_embed, view=view)
@@ -223,14 +224,14 @@ class override_commands(commands.Cog):
 
         if view.check_message == 2:
             timeout_embed = discord.Embed(title="Too slow!",
-            description="Interaction timed out!", 
+            description=f"{alert_emoji} Interaction timed out!", 
             colour=discord.Colour.red())
             await interaction.edit_original_response(embed=timeout_embed, view=None)
             return
 
         if view.check_message == 0:
             cancel_embed = discord.Embed(title="Someone's Indecisive!",
-            description="Entry deletion cancelled.", 
+            description=f"{alert_emoji} Entry deletion cancelled.", 
             colour=discord.Colour.red())
             await interaction.edit_original_response(embed=cancel_embed, view=None)
             return
@@ -241,14 +242,14 @@ class override_commands(commands.Cog):
                 row = await cur.fetchone()
             if not row:
                 no_birthday_embed = discord.Embed(title="Such empty...",
-                    description=f"{user.mention} doesn't have a birthday entry.", 
+                    description=f"{alert_emoji} {user.mention} doesn't have a birthday entry.", 
                     colour=discord.Colour.red())
                 await interaction.edit_original_response(embed=no_birthday_embed, view=None)
                 return
             await db.execute("DELETE FROM birthdays WHERE user_id = ?", (user.id,))
             await db.commit()
             removal_success_embed = discord.Embed(title="Oh look! It worked!",
-                description=f"Removed birthday entry for {user.mention}.", 
+                description=f"{approve_tick_emoji} Removed birthday entry for {user.mention}.", 
                 colour=discord.Colour.green())
             await interaction.edit_original_response(embed=removal_success_embed, view=None)
 
