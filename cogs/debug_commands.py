@@ -85,7 +85,16 @@ class debug_commands(commands.Cog):
                 pass
             else:
                 recent_user, recent_day, recent_month = row
-                recent_user_object = guild.get_member(recent_user) or await guild.fetch_member(recent_user)
+                try:
+                    recent_user_object = guild.get_member(recent_user) or await guild.fetch_member(recent_user)
+                except:
+                    await db.execute("DELETE FROM birthdays WHERE user_id = ?", (recent_user,))
+                    await db.commit()
+                    if interaction.response.is_done():
+                        await interaction.followup.send(content=f"{alert_emoji} A member departure has occured. Run the command again.")
+                    else:
+                        await interaction.response.send_message(content=f"{alert_emoji} A member departure has occured. Run the command again.")
+                    return
                 status_embed.add_field(name="Most recent birthday",
                                        value=f"{recent_user_object.mention} on {recent_day} {self.months_list[recent_month-1]}",
                                        inline=False)
@@ -107,7 +116,16 @@ class debug_commands(commands.Cog):
                 pass
             else:
                 upcoming_user, upcoming_day, upcoming_month = row
-                upcoming_user_object = guild.get_member(upcoming_user) or await guild.fetch_member(upcoming_user)
+                try:
+                    upcoming_user_object = guild.get_member(upcoming_user) or await guild.fetch_member(upcoming_user)
+                except:
+                    await db.execute("DELETE FROM birthdays WHERE user_id = ?", (upcoming_user,))
+                    await db.commit()
+                    if interaction.response.is_done():
+                        await interaction.followup.send(content=f"{alert_emoji} A member departure has occured. Run the command again.")
+                    else:
+                        await interaction.response.send_message(content=f"{alert_emoji} A member departure has occured. Run the command again.")
+                    return
                 status_embed.add_field(name="Closest upcoming birthday",
                                        value=f"{upcoming_user_object.mention} on {upcoming_day} {self.months_list[upcoming_month-1]}",
                                        inline=False)
