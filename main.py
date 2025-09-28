@@ -44,7 +44,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
     elif isinstance(error, app_commands.NoPrivateMessage):
         message  = f"{var.alert_emoji} You can't use this bot in DMs!"
     else:
-        message = f"An unexpected error occured. Please alert the bot owner.\n{error}"
+        message = f"An unexpected error occured. Please alert the bot owner.\n{error}
         guild = bot.get_guild(var.guild_id) or await bot.fetch_guild(var.guild_id)
         error_logging_channel = guild.get_channel(var.bot_testing) or await guild.fetch_channel(var.bot_testing)
         await error_logging_channel.send(f"{var.alert_emoji} Error executing {interaction.command.name}:\n{error}\nUser:{interaction.user.name}")
