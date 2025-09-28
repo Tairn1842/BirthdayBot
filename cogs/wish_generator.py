@@ -25,7 +25,7 @@ async def wish_creator():
         reasoning={"effort":"high"},
         max_output_tokens=2048, 
         store=False,
-        service_tier="flex"
+        service_tier="priority"
     )
     ai_response = response.output_text.strip()
     return ai_response
