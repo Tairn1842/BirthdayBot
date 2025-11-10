@@ -42,7 +42,6 @@ class help_command(commands.Cog):
 
 
     @app_commands.command(name="help", description="How does the bot work?")
-    @app_commands.checks.has_any_role(professors, server_staff)
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     async def help_command(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
@@ -50,9 +49,9 @@ class help_command(commands.Cog):
         birthday_setting_info = discord.Embed(
             title="Registering Birthdays", 
             description=
-            "- The primary purpose of this bot is to register and hold a list of our members' birthdays.\n"
+            "- The primary purpose of this bot is to register and hold a list of your birthdays.\n"
             "- On the day of someone's birthday, at around midnight in the appointed timezone, the bot will send a wish.\n"
-            "- Currently, the wishes will be sent to the Atrium channel, although this is due to change upon full release.\n"
+            "- The wishes will be sent to the Clock Tower channel, so keep an eye on it for birthday announcements!\n"
             "- The next page of this embed will tell you why we allow you to set your own timezone, and how to do so.\n", 
             color=interaction.user.colour
         )
@@ -61,10 +60,10 @@ class help_command(commands.Cog):
         timezone_info = discord.Embed(
             title="Timezone information",
             description=
-            "- The birthday bot will wish people by default at around midnight UTC time.\n"
-            "- However, for some people, this may be on the day before their birthday or well into the afternoon on the day of their birthday.\n"
+            "- The birthday bot will wish you at around midnight UTC by default.\n"
+            "- However, for some of you, this may be on the day before your birthday or well into the afternoon on the day of your birthday.\n"
             "- Therefore, the bot gives you the option to set a timezone for your (or somebody else's) birthday.\n"
-            "- This is done by entering their timezone in the IANA format.\n"
+            "- This is done by entering your timezone in the IANA format.\n"
             "- This **usually** takes the from of Continent/CapitalCity, but it can vary.\n"
             "- If you're unsure about your IANA timezone code, you can check it out here: https://datetime.app/iana-timezones",
             color=interaction.user.colour
@@ -75,7 +74,7 @@ class help_command(commands.Cog):
             title="Command Group Information",
             description="- Most commands have two words in their name; the first is the command group.\n"
             "- These groups are used to identify the purpose of and access to the commands in them.\n"
-            "- The help command and those in the 'birthday' group are accessible to all staff members.\n"
+            "- The help command and those in the 'birthday' group are accessible to all members.\n"
             "- The override commands exist for use in special cases and are exclusively available to the professors.\n"
             "- The debug commands exist for testing, evaluation, and debugging, and are exclusively available to the bot owner — Tairn.",
             colour=interaction.user.colour)

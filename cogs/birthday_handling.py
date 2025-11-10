@@ -145,10 +145,10 @@ async def checkpoint_wal():
 
 
 images_dir = Path(__file__).parent.parent / "images"
-images_list = [discord.File(images_dir / "img1.jpg", filename="img1.jpg"),
-               discord.File(images_dir / "img2.jpg", filename="img2.jpg"),
-               discord.File(images_dir / "img3.jpg", filename="img3.jpg")
-]
+images = ["img1.jpg",
+        "img2.jpg",
+        "img3.jpg"
+        ]
 
 class birthday_handling(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -168,12 +168,14 @@ class birthday_handling(commands.Cog):
                     description=await wish_creator(), 
                     colour=birthday_member.colour)
                 birthday_embed.set_thumbnail(url=avatar_url)
-                birthday_image_selector = random.choice(images_list)
-                birthday_embed.set_image(url=f"attachment://{birthday_image_selector.filename}")
-                channel = guild.get_channel(atrium) or await guild.fetch_channel(atrium)
+                birthday_image_selector = random.choice(images)
+                birthday_image_path = images_dir / f"{birthday_image_selector}"
+                birthday_image_file = discord.File(birthday_image_path, filename=birthday_image_path.name)
+                birthday_embed.set_image(url=f"attachment://{birthday_image_file.filename}")
+                channel = guild.get_channel(clock_tower) or await guild.fetch_channel(clock_tower)
                 await channel.send(
                     birthday_member.mention,
-                    file=birthday_image_selector,
+                    file=birthday_image_file,
                     embed=birthday_embed,
                     allowed_mentions=discord.AllowedMentions(users=True),
                 )

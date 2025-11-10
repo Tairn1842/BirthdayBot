@@ -65,7 +65,6 @@ class birthday_commands(commands.Cog):
 
     @birthday_group.command(name="add", description="Add your birthday to the database")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, server_staff)
     @app_commands.describe(
         day="Their birthday day (1-31)",
         month="Their birthday month (1-12)",
@@ -199,7 +198,6 @@ class birthday_commands(commands.Cog):
 
     @birthday_group.command(name="remove", description="Remove your birthday from the database")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, server_staff)    
     async def remove_birthday(
         self,
         interaction: discord.Interaction
@@ -249,7 +247,6 @@ class birthday_commands(commands.Cog):
 
     @birthday_group.command(name="show", description="Display a user's birthday information")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, server_staff)
     @app_commands.describe(user="Select a user or provide their ID")
     async def show_birthday(
         self,
@@ -280,7 +277,6 @@ class birthday_commands(commands.Cog):
 
     @birthday_group.command(name="show_nearest", description="Displays the nearest (registered) birthdays")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
-    @app_commands.checks.has_any_role(professors, server_staff)
     async def nearest_birthdays(self, interaction: discord.Interaction):
         await interaction.response.defer()
         db = await init_db()

@@ -10,7 +10,7 @@ wisher_model = "o4-mini"
 
 
 async def wish_creator():
-    character = magical_characters[random.choice(magical_characters)]
+    character = random.choice(magical_characters)
 
     system_message = f"""
     Generate a three-sentence birthday wish in a tone **inspired** by the qualities of {character} from Harry Potter. 
@@ -22,8 +22,7 @@ async def wish_creator():
         instructions=system_message,
         input="Wish the user a happy birthday!", 
         temperature=1,
-        reasoning={"effort":"high"},
-        max_output_tokens=2048, 
+        reasoning={"effort":"high"}, 
         store=False,
         service_tier="priority"
     )
