@@ -10,7 +10,7 @@ wisher_model = "o4-mini"
 
 
 async def wish_creator():
-    character = magical_characters[random.randint(0,(len(magical_characters)-1))]
+    character = magical_characters[random.choice(magical_characters)]
 
     system_message = f"""
     Generate a three-sentence birthday wish in a tone **inspired** by the qualities of {character} from Harry Potter. 

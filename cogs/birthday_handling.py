@@ -1,6 +1,8 @@
 import aiosqlite, discord, asyncio
 from discord.ext import commands
 from datetime import datetime, timezone
+from pathlib import Path
+import random
 from zoneinfo import ZoneInfo
 from .wish_generator import wish_creator
 from .variables import *
@@ -142,6 +144,12 @@ async def checkpoint_wal():
     await db.commit()
 
 
+images_dir = Path(__file__).parent.parent / "images"
+images_list = [discord.File(images_dir / "img1.jpg", filename="img1.jpg"),
+               discord.File(images_dir / "img2.jpg", filename="img2.jpg"),
+               discord.File(images_dir / "img3.jpg", filename="img3.jpg")
+]
+
 class birthday_handling(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot  = bot
@@ -160,10 +168,12 @@ class birthday_handling(commands.Cog):
                     description=await wish_creator(), 
                     colour=birthday_member.colour)
                 birthday_embed.set_thumbnail(url=avatar_url)
-                birthday_embed.set_image(url=r"https://img.freepik.com/premium-photo/birthday-cake-magical-background-with-bokeh-sparkles-happy-birthday-greeting-card-design_174533-13977.jpg")
+                birthday_image_selector = random.choice(images_list)
+                birthday_embed.set_image(url=f"attachment://{birthday_image_selector.filename}")
                 channel = guild.get_channel(atrium) or await guild.fetch_channel(atrium)
                 await channel.send(
                     birthday_member.mention,
+                    file=birthday_image_selector,
                     embed=birthday_embed,
                     allowed_mentions=discord.AllowedMentions(users=True),
                 )
