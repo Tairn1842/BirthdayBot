@@ -275,7 +275,7 @@ class birthday_commands(commands.Cog):
             await interaction.followup.send(embed=show_embed)
     
 
-    @birthday_group.command(name="show_nearest", description="Displays the nearest (registered) birthdays")
+    @birthday_group.command(name="show_nearest", description="Displays the nearest birthdays")
     @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
     async def nearest_birthdays(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -349,7 +349,62 @@ class birthday_commands(commands.Cog):
                                        inline=False)
                 pass
         await interaction.followup.send(embed=status_embed)
+    
 
+    @birthday_group.command(name="on_date", description="Tells you whose birthday is on a given date")
+    @app_commands.checks.cooldown(rate=1, per=15, key = lambda i: i.user.id)
+    @app_commands.describe(
+        month = "The month, this should be obvious.",
+        day = "Really?")
+    @app_commands.autocomplete(month = month_autocomplete)
+    async def on_date(self, interaction: discord.Interaction, day: int, month: str):
+        await interaction.response.defer(ephemeral=False)
+
+        try:
+            for i in range(0,(len(self.months_list))):
+                if month in self.months_list[i]:
+                    month_int = i+1
+                    break
+            else:
+                raise Exception(f"{alert_emoji} Month not found, enter the month properly.")
+        except Exception as e:
+            month_list_error=discord.Embed(title="Well, that didn't work.",
+                description = f"{alert_emoji} {e}", 
+                colour=discord.Colour.red())
+            await interaction.followup.send(embed=month_list_error)
+            return
+
+        try:
+            await self.month_checker(date=day, month=month_int)
+        except Exception as e:
+            month_check_error=discord.Embed(title="Well, that didn't work.", 
+                            description = f"{alert_emoji} {e}", 
+                            colour=discord.Colour.red())
+            await interaction.followup.send(embed=month_check_error)
+            return
+
+        db = await init_db()
+        async with db.execute("SELECT user_id FROM birthdays WHERE month = ? AND day = ?", (month_int, day)) as cur:
+            rows = await cur.fetchall()
+        
+        if len(rows) == 0:
+            empty_date = discord.Embed(title="Such empty...", description=f"{alert_emoji} There are no birthdays on {day} {month}.", colour=discord.Colour.red())
+            await interaction.followup.send(embed=empty_date)
+            return
+        
+        user_ids = [row[0] for row in rows]
+        celebrator_list = ""
+        guild = interaction.guild
+        for i in user_ids:
+            birthday_celebrator = (guild.get_member(i) or await guild.fetch_member(i))
+            celebrator_list += f"{birthday_celebrator.mention}\n"
+
+        
+        on_date_embed = discord.Embed(title=f"People celebrating their birthday on {day} {month}:",
+                                      description=f"{celebrator_list}", 
+                                      colour=interaction.user.colour)
+        await interaction.followup.send(embed=on_date_embed)
+        return
 
 async def setup(bot: commands.Bot):
     await init_db()

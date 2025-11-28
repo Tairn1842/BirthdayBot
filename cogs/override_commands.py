@@ -70,7 +70,7 @@ class override_commands(commands.Cog):
 
     override_group = app_commands.Group(name="override", description= "admin override commands")
 
-    @override_group.command(name="add", description="Add a birthday to the database")
+    @override_group.command(name="add", description="[Admin only] Add a birthday to the database")
     @override_access()
     @app_commands.describe(
         user="Select a user or provide their ID",
@@ -204,7 +204,7 @@ class override_commands(commands.Cog):
                 await interaction.edit_original_response(embed=entry_error_embed, view=None)
 
 
-    @override_group.command(name="remove", description="Remove a birthday from the database")
+    @override_group.command(name="remove", description="[Admin only] Remove a birthday from the database")
     @override_access()
     @app_commands.describe(user="Select a user or provide their ID")
     async def remove_birthday(

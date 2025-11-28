@@ -46,7 +46,7 @@ class debug_commands(commands.Cog):
             raise error
 
 
-    @debug_group.command(name="force", description="Force a wish checking cycle to run")
+    @debug_group.command(name="force", description="[Bot owner only] Force a wish checking cycle to run")
     @owner_check()
     async def force_wish(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
@@ -57,7 +57,7 @@ class debug_commands(commands.Cog):
         await interaction.followup.send(f"{approve_tick_emoji} Force wish cycle completed.")
     
 
-    @debug_group.command(name="status", description="Displays the nearest (registered) birthdays and the size of the database")
+    @debug_group.command(name="status", description="[Bot owner only] Displays the nearest (registered) birthdays and the size of the database")
     @owner_check()
     async def db_status(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
@@ -147,7 +147,7 @@ class debug_commands(commands.Cog):
         await interaction.followup.send(embed=status_embed)
     
 
-    @debug_group.command(name="ping", description="Check the bot's latency")
+    @debug_group.command(name="ping", description="[Bot owner only] Check the bot's latency")
     @owner_check()
     async def ping_command(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
