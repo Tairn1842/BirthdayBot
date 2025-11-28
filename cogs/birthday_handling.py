@@ -1,8 +1,8 @@
 import aiosqlite, discord, asyncio
 from discord.ext import commands
 from datetime import datetime, timezone
+import numpy as np
 from pathlib import Path
-import random
 from zoneinfo import ZoneInfo
 from .wish_generator import wish_creator
 from .variables import *
@@ -145,10 +145,6 @@ async def checkpoint_wal():
 
 
 images_dir = Path(__file__).parent.parent / "images"
-images = ["img1.jpg",
-        "img2.jpg",
-        "img3.jpg"
-        ]
 
 class birthday_handling(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -168,7 +164,7 @@ class birthday_handling(commands.Cog):
                     description=await wish_creator(), 
                     colour=birthday_member.colour)
                 birthday_embed.set_thumbnail(url=avatar_url)
-                birthday_image_selector = random.choice(images)
+                birthday_image_selector = np.random.choice(images)
                 birthday_image_path = images_dir / f"{birthday_image_selector}"
                 birthday_image_file = discord.File(birthday_image_path, filename=birthday_image_path.name)
                 birthday_embed.set_image(url=f"attachment://{birthday_image_file.filename}")

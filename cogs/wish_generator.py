@@ -2,7 +2,7 @@ from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from discord.ext import commands
 from .variables import magical_characters
-import os, random
+import os, numpy as np
 
 load_dotenv()
 wisher_client = AsyncOpenAI(api_key=os.getenv("openai_api_key"))
@@ -10,7 +10,7 @@ wisher_model = "o4-mini"
 
 
 async def wish_creator():
-    character = random.choice(magical_characters)
+    character = np.random.choice(magical_characters)
 
     system_message = f"""
     Generate a three-sentence birthday wish in a tone **inspired** by the qualities of {character} from Harry Potter. 
@@ -22,6 +22,7 @@ async def wish_creator():
         instructions=system_message,
         input="Wish the user a happy birthday!", 
         temperature=1,
+        tools=[{"type":"web_search_preview"}],
         reasoning={"effort":"high"}, 
         store=False,
         service_tier="priority"
