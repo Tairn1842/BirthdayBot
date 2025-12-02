@@ -6,27 +6,37 @@ import os, numpy as np
 
 load_dotenv()
 wisher_client = AsyncOpenAI(api_key=os.getenv("openai_api_key"))
-wisher_model = "o4-mini"
+wisher_model = "gpt-5.1"
 
 
 async def wish_creator():
     character = np.random.choice(magical_characters)
 
-    system_message = f"""
-    Generate a three-sentence birthday wish in a tone **inspired** by the qualities of {character} from Harry Potter. 
-    **If unable to follow the directive exactly, do not mention it in the response**.
-    End the response by signing off as the character.
-    """
     response = await wisher_client.responses.create(
-        model = wisher_model,
-        instructions=system_message,
-        input="Wish the user a happy birthday!", 
-        temperature=1,
-        tools=[{"type":"web_search_preview"}],
-        reasoning={"effort":"high"}, 
-        store=False,
-        service_tier="priority"
-    )
+    model="gpt-5.1",
+    input=[
+        {"role": "developer",
+        "content": [{
+            "type": "input_text",
+            "text": "You will be assigned a character from the fictional series \"Harry Potter\"."
+            "You will impersonate the character, and respond to the given prompt as the character would. Your response should not be verbose."
+            "It should be no longer than 5 sentences. End the response by signing off as the character."
+            }]
+        },
+        {"role": "user",
+        "content": [{
+            "type": "input_text",
+            "text": f"Wish the user a happy birthday as {character}."
+            }]
+        }
+        ],
+    text={"format": {"type": "text"},"verbosity": "medium"},
+    reasoning={"effort": "high"},
+    tools=[{"type": "web_search"}],
+    store=False,
+    include=["reasoning.encrypted_content",
+            "web_search_call.action.sources"]
+        )
     ai_response = response.output_text.strip()
     return ai_response
 
