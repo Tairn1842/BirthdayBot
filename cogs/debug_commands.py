@@ -96,7 +96,7 @@ class debug_commands(commands.Cog):
                         await interaction.response.send_message(content=f"{alert_emoji} A member departure has occured. Run the command again.")
                     return
                 status_embed.add_field(name="Most recent birthday",
-                                       value=f"{recent_user_object.mention} on {recent_day} {self.months_list[recent_month-1]}",
+                                       value=f"{recent_user_object.mention} ({recent_user_object.name}) on {recent_day} {self.months_list[recent_month-1]}",
                                        inline=False)
                 pass
         
@@ -127,7 +127,7 @@ class debug_commands(commands.Cog):
                         await interaction.response.send_message(content=f"{alert_emoji} A member departure has occured. Run the command again.")
                     return
                 status_embed.add_field(name="Closest upcoming birthday",
-                                       value=f"{upcoming_user_object.mention} on {upcoming_day} {self.months_list[upcoming_month-1]}",
+                                       value=f"{upcoming_user_object.mention} ({upcoming_user_object.name}) on {upcoming_day} {self.months_list[upcoming_month-1]}",
                                        inline=False)
                 pass
         
